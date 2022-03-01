@@ -46,15 +46,13 @@ export const Home: React.FC = () => {
     const getData = async () => {
       try {
         const scooterQueryForSlugResp = await core40SDK.ok(core40SDK.query_for_slug("9vP8udIOywTCPEwQgAxYTM"))
-        console.log(scooterQueryForSlugResp)
         const scooterQuery = await core40SDK.ok(core40SDK.run_query({query_id: scooterQueryForSlugResp.id,
-          result_format: "json_detail"}))
+          result_format: "json_detail",  cache: false}))
         setScooterData(scooterQuery.data)
 
         const technicianQueryForSlugResp = await core40SDK.ok(core40SDK.query_for_slug("nVJWfWhjD5JNZoPlHlvZxy"))
-        console.log(technicianQueryForSlugResp)
         const technicianQuery = await core40SDK.ok(core40SDK.run_query({query_id: technicianQueryForSlugResp.id,
-          result_format: "json_detail"}))
+          result_format: "json_detail", cache: false}))
         setTechnicianData(technicianQuery.data)
 
 
@@ -69,7 +67,6 @@ export const Home: React.FC = () => {
 
   useEffect(() => {
     if (scooterData && technicianData){
-      console.log(technicianData)
       const scootyDat: Features[] = []
       //keys from technician table
       const technicianID = Object.keys(technicianData[0])[0]
