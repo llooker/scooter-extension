@@ -24,12 +24,13 @@
 
  */
 import React, { useContext, useEffect, useState } from 'react'
-import { ComponentsProvider, Space, Heading, Grid, Box2, Flex, FlexItem } from '@looker/components'
+import { ComponentsProvider, Heading, Box2, Flex, FlexItem } from '@looker/components'
 import { ExtensionContext } from '@looker/extension-sdk-react'
 import { ScooterQueue } from './ScooterQueue'
 import { Map } from './Map'
 import { Technicians } from './Technicians'
-import styled from 'styled-components';
+import {AppContext} from './context'
+
 /**
  * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
  */
@@ -39,6 +40,7 @@ export const Home: React.FC = () => {
   const [message, setMessage] = useState('')
   const [scooterData, setScooterData] = useState(undefined)
   const [technicianData, setTechnicianData] = useState(undefined)
+  const [activeIcon, setActiveIcon] = useState(undefined)
 
   useEffect(() => {
     //load data from technician and scooter query from Looker
@@ -61,34 +63,36 @@ export const Home: React.FC = () => {
   }, [core40SDK]) //onload
 
   return (
-    <ComponentsProvider>
-    <Flex height="100vh" 
-    width="100vw" 
-    bg="ui1" 
-    m="-8px" 
-    flexWrap="wrap">
-      <FlexItem width="100vw">
-        <Box2 p="u5" bg="ui2" height="8vh">
-          <Heading>
-          🛴🛴🛴 Scooty ⚡⚡⚡
-            </Heading>
-        </Box2>
-      </FlexItem>
-      <FlexItem width="50vw">
-        <Box2   p="u5" bg="ui1" height="92vh">
-          <ScooterQueue scooterData={scooterData}/>
-        </Box2>
-      </FlexItem>
-      <FlexItem width="50vw">
-        <Box2 height="60vh" >
-          <Map  technicianData={technicianData} scooterData={scooterData}/>
-        </Box2>
-        <Box2 p="u5" bg="ui1" height="32vh">
-          <Technicians technicianData={technicianData}/>
-        </Box2>
-      </FlexItem>
-    </Flex>
-    </ComponentsProvider>
+    <AppContext.Provider value={{setActiveIcon, activeIcon}}>
+      <ComponentsProvider>
+      <Flex height="100vh" 
+      width="100vw" 
+      bg="ui1" 
+      m="-8px" 
+      flexWrap="wrap">
+        <FlexItem width="100vw">
+          <Box2 p="u5" bg="ui2" height="8vh">
+            <Heading>
+            🛴🛴🛴 Scooty ⚡⚡⚡
+              </Heading>
+          </Box2>
+        </FlexItem>
+        <FlexItem width="50vw">
+          <Box2   p="u5" bg="ui1" height="92vh">
+            <ScooterQueue scooterData={scooterData}/>
+          </Box2>
+        </FlexItem>
+        <FlexItem width="50vw">
+          <Box2 height="60vh" >
+            <Map  technicianData={technicianData} scooterData={scooterData}/>
+          </Box2>
+          <Box2 p="u5" bg="ui1" height="32vh">
+            <Technicians technicianData={technicianData}/>
+          </Box2>
+        </FlexItem>
+      </Flex>
+      </ComponentsProvider>
+    </AppContext.Provider>
   )
 }
 

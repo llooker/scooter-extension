@@ -29,15 +29,16 @@ import { ExtensionContext } from '@looker/extension-sdk-react'
 import { Loader } from "@googlemaps/js-api-loader"
 import styled from 'styled-components';
 import {Spinner} from './Accessories'
+import {AppContext} from './context'
 
 /**
  * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
  */
 export const Map: React.FC = ({scooterData, technicianData}) => {
-  console.log("Map")
-  console.log({scooterData, technicianData})
+  // console.log("Map")
+  // console.log({scooterData, technicianData})
   const { core40SDK } = useContext(ExtensionContext)
-  const [message, setMessage] = useState('')
+  const {activeIcon} = useContext(AppContext);
 
   const api_key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
 
@@ -84,7 +85,7 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
 
 
       const initializeMap = () => {
-        // console.log("initializeMap")
+        console.log("initializeMap")
         loader.load().then(() => {
           const map = new google.maps.Map(document.getElementById("container"), {
             center: { lat: scooterData[0][scooterXCoord].value, lng: scooterData[0][scooterYCoord].value },
@@ -113,6 +114,13 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
           const infoWindow = new google.maps.InfoWindow();
           // Create the markers.
           scootyDat.forEach((item) => {
+            // const activeIconId = activeIcon["scooters.id"] ? activeIcon["scooters.id"] : activeIcon["technicians.id"]
+            // console.log({activeIconId})
+
+            let propNameToUse = "scooters.id";
+            if (activeIcon && activeIcon.hasOwnProperty("technicians.id"))propNameToUse = "technicians.id"
+            const activeIconId = activeIcon ? activeIcon[propNameToUse].value :  0;
+
             const marker = new google.maps.Marker({
                   position: item["position"],
                   map: map,
@@ -122,6 +130,7 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
                   label: `${item["id"]}`,
                   icon: icons[item["type"]].icon,
                   optimized: false,
+                  animation: item.id === activeIconId ?  google.maps.Animation.DROP : null,
                 });
 
             // Add a click listener for each marker, and set up the info window.
@@ -135,7 +144,7 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
       }
       initializeMap() //for now
     }
-  }, [scooterData, technicianData])
+  }, [scooterData, technicianData, activeIcon]) //could be improved
 
   return (
     <MapContainer id="container">
