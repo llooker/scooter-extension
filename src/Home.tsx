@@ -30,6 +30,7 @@ import { ScooterQueue } from './ScooterQueue'
 import { Map } from './Map'
 import { Technicians } from './Technicians'
 import {AppContext} from './context'
+import {calculateDistance} from './utils'
 
 /**
  * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
@@ -40,7 +41,7 @@ export const Home: React.FC = () => {
   const [message, setMessage] = useState('')
   const [scooterData, setScooterData] = useState(undefined)
   const [technicianData, setTechnicianData] = useState(undefined)
-  const [activeIcon, setActiveIcon] = useState(undefined)
+  const [pointOfInterest, setPointOfInterest] = useState(undefined)
 
   useEffect(() => {
     //load data from technician and scooter query from Looker
@@ -62,8 +63,31 @@ export const Home: React.FC = () => {
     getData()
   }, [core40SDK]) //onload
 
+  useEffect(() => {
+    if (pointOfInterest && scooterData && technicianData){
+      const isScooter = Object.keys(pointOfInterest)[0].indexOf("scoot") > -1 ;
+      const partialKeyOfInterest = isScooter ? "scooters" : "technicians";
+      const latOfInterest = pointOfInterest[`${partialKeyOfInterest}.last_lat_coord`].value;
+      const lngOfInterest = pointOfInterest[`${partialKeyOfInterest}.last_lng_coord`].value;
+      
+      const correspondingPartialKey = isScooter ? "technicians" : "scooters";
+      const correspondingArray = isScooter ? [...technicianData] : [...scooterData]
+      correspondingArray.map(item => {
+        const correspondingLat = item[`${correspondingPartialKey}.last_lat_coord`].value
+        const correspondingLng = item[`${correspondingPartialKey}.last_lng_coord`].value
+        const distance = calculateDistance(latOfInterest, lngOfInterest, correspondingLat, correspondingLng, "N" )
+        item[`${correspondingPartialKey}.distance`] = {value: distance};
+      })
+      correspondingArray.sort((a, b) => { 
+        return a[`${correspondingPartialKey}.distance`].value - b[`${correspondingPartialKey}.distance`].value;
+      });
+      setTechnicianData(correspondingArray)
+    }
+
+  }, [pointOfInterest])
+
   return (
-    <AppContext.Provider value={{setActiveIcon, activeIcon}}>
+    <AppContext.Provider value={{pointOfInterest, setPointOfInterest}}>
       <ComponentsProvider>
       <Flex height="100vh" 
       width="100vw" 

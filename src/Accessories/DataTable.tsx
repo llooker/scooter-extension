@@ -8,12 +8,13 @@ import {AppContext} from '../context'
 export const DataTable: React.FC = ({data, columnsToRender}) => {
   // console.log("DataTable")
   // console.log({data, columnsToRender})
+  // console.log(columnsToRender.length)
 
-  const {setActiveIcon} = useContext(AppContext);
+  const {setPointOfInterest} = useContext(AppContext);
 
   const handleTableRowClick = ({e, id}) => {
     const dataIndexClicked = data[id.split("-").pop() || 0]
-    setActiveIcon(dataIndexClicked)
+    setPointOfInterest(dataIndexClicked)
   }
 
   return(

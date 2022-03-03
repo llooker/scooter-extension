@@ -41,7 +41,7 @@ export const Technicians: React.FC = ({technicianData}) => {
       <Box2>
         <Heading textAlign="center">Technicians</Heading>
       {technicianData ? 
-      <DataTable data={technicianData} columnsToRender={Array.from(Array(5).keys())}/>
+      <DataTable data={technicianData} columnsToRender={Array.from(Array(Object.keys(technicianData[0]).length).keys())}/>
       : 
      <Spinner />}</Box2>
     )
