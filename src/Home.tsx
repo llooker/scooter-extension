@@ -78,10 +78,7 @@ export const Home: React.FC = () => {
         const distance = calculateDistance(latOfInterest, lngOfInterest, correspondingLat, correspondingLng, "N" )
         item[`${correspondingPartialKey}.distance`] = {value: distance};
       })
-      correspondingArray.sort((a, b) => { 
-        return a[`${correspondingPartialKey}.distance`].value - b[`${correspondingPartialKey}.distance`].value;
-      });
-      setTechnicianData(correspondingArray)
+      setTechnicianData(correspondingArray) //for now
     }
 
   }, [pointOfInterest])

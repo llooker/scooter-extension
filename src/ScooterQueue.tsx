@@ -36,15 +36,20 @@ export const ScooterQueue: React.FC = ({scooterData}) => {
   const { core40SDK } = useContext(ExtensionContext)
   const [message, setMessage] = useState('')
 
-  const sortedScooterData = scooterData ? 
-    scooterData.sort((a, b) => b["scooters.days_since_last_service"].value - a["scooters.days_since_last_service"].value): 
-    ""
+  // const sortedScooterData = scooterData ? 
+  //   scooterData.sort((a, b) => b["scooters.days_since_last_service"].value - a["scooters.days_since_last_service"].value): 
+  //   ""
 
   return (
     <Box2>
         <Heading textAlign="center">Scooters</Heading>
     {scooterData ? 
-      <DataTable data={sortedScooterData} columnsToRender={Array.from(Array(5).keys())}/>: 
+      <DataTable 
+      data={scooterData} 
+      columnsToRender={Array.from(Array(5).keys())}
+      initialSortValue={"scooters.days_since_last_service"}
+      initialSortOrder={"DESC"}
+      />: 
    <Spinner />}</Box2>
   )
 }

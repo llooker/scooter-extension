@@ -41,7 +41,16 @@ export const Technicians: React.FC = ({technicianData}) => {
       <Box2>
         <Heading textAlign="center">Technicians</Heading>
       {technicianData ? 
-      <DataTable data={technicianData} columnsToRender={Array.from(Array(Object.keys(technicianData[0]).length).keys())}/>
+      <DataTable 
+        data={technicianData} 
+        columnsToRender={Array.from(Array(Object.keys(technicianData[0]).length).keys())}
+        initialSortValue={technicianData[0].hasOwnProperty("technicians.distance") ? 
+          "technicians.distance" : 
+          "technicians.id"}
+        initialSortOrder={technicianData[0].hasOwnProperty("technicians.distance") ? 
+          "ASC" : 
+          "DESC"}
+        />
       : 
      <Spinner />}</Box2>
     )

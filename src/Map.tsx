@@ -39,7 +39,7 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
   // console.log({scooterData, technicianData})
   const { core40SDK } = useContext(ExtensionContext)
   const {pointOfInterest} = useContext(AppContext);
-
+  
   const api_key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
 
   const iconBase =
@@ -114,13 +114,10 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
           const infoWindow = new google.maps.InfoWindow();
           // Create the markers.
           scootyDat.forEach((item) => {
-            // const activeIconId = activeIcon["scooters.id"] ? activeIcon["scooters.id"] : activeIcon["technicians.id"]
-            // console.log({activeIconId})
 
-            // let propNameToUse = "scooters.id";
-            // if (activeIcon && activeIcon.hasOwnProperty("technicians.id"))propNameToUse = "technicians.id"
-            // const activeIconId = activeIcon ? activeIcon[propNameToUse].value :  0;
-
+            const scooterOrTechnician = pointOfInterest && Object.keys(pointOfInterest)[0].indexOf("scoot") > -1 ? "scooters" : "technicians"; 
+            const pointOfInterestId = pointOfInterest && pointOfInterest[`${scooterOrTechnician}.id`].value;
+            
             const marker = new google.maps.Marker({
                   position: item["position"],
                   map: map,
@@ -130,7 +127,7 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
                   label: `${item["id"]}`,
                   icon: icons[item["type"]].icon,
                   optimized: false,
-                  // animation: item.id === activeIconId ?  google.maps.Animation.DROP : null,
+                  animation: pointOfInterest && item.id === pointOfInterestId ?  google.maps.Animation.DROP : "",
                 });
 
             // Add a click listener for each marker, and set up the info window.
@@ -144,7 +141,7 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
       }
       initializeMap() //for now
     }
-  }, [scooterData, technicianData]) // activeIcon //could be improved
+  }, [scooterData, technicianData, pointOfInterest]) // activeIcon //could be improved
 
   return (
     <MapContainer id="container">
