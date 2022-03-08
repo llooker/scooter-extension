@@ -46,9 +46,13 @@ export const ScooterQueue: React.FC = ({scooterData}) => {
     {scooterData ? 
       <DataTable 
       data={scooterData} 
-      columnsToRender={Array.from(Array(5).keys())}
-      initialSortValue={"scooters.days_since_last_service"}
-      initialSortOrder={"DESC"}
+      columnsToRender={Array.from(Array(Object.keys(scooterData[0]).length).keys())}
+      initialSortValue={scooterData[0].hasOwnProperty("scooters.distance") ? 
+        "scooters.distance" : 
+        "scooters.days_since_last_service"}
+      initialSortOrder={scooterData[0].hasOwnProperty("scooters.distance") ? 
+        "ASC" : 
+        "DESC"}
       />: 
    <Spinner />}</Box2>
   )

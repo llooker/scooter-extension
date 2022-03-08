@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useRef } from 'react'
 import {Table, TableHead, TableBody, TableRow,TableDataCell, TableHeaderCell, Truncate } from '@looker/components'
-import {titleCaseHelper} from '../utils'
+import {titleCaseHelper, sortHelper} from '../utils'
 import styled from 'styled-components';
 import {trim, toLower} from 'lodash'
 import {AppContext} from '../context'
@@ -9,14 +9,17 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
   // console.log("DataTable")
   // console.log({data, columnsToRender, initialSortValue, initialSortOrder})
 
-  const {setPointOfInterest, pointOfInterest} = useContext(AppContext);
+  const {setPointOfInterest, pointOfInterest,
+  setTechnicianData, setScooterData} = useContext(AppContext);
   const [tableData, setTableData] = useState(undefined)
   const [sortValue, setSortValue] = useState(undefined)
   const [sortOrder, setSortOrder] = useState(undefined)
   const prevSortValue = usePrevious(sortValue);
   const prevSortOrder = usePrevious(sortOrder);
 
-  const handleTableRowClick = ({e, id}) => {
+  const handleTableRowClick = ({id}) => {
+    // console.log("handleTableRowClick")
+    // console.log({id})
     const rowClicked = tableData[id.split("-").pop() || 0]
     setPointOfInterest(rowClicked)
   } 
@@ -42,40 +45,10 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
 
   useEffect(()=>{
     if (sortValue && sortOrder ){
-      sortHelper();
+      const sortedData = sortHelper({data, sortOrder, sortValue});
+      setTableData(sortedData);
     }
   }, [sortValue, sortOrder, data])
-
-
-  function sortHelper(){
-    const dataCopy = [...data]
-    if (sortOrder === "ASC"){
-      dataCopy.sort((a, b) => {   
-        if (typeof a[`${sortValue}`].value === 'string'){
-          const valueA = toLower(a[`${sortValue}`].value);
-          const valueB = toLower(b[`${sortValue}`].value);
-          if (valueA < valueB) return -1
-          if (valueA > valueB) return 1
-          return 0
-        } else {
-          return ([a[`${sortValue}`].value - b[`${sortValue}`].value])
-        }
-      })
-    } else {
-      dataCopy.sort((a, b) => {
-        if (typeof a[`${sortValue}`].value === 'string'){
-          const valueA = toLower(a[`${sortValue}`].value);
-          const valueB = toLower(b[`${sortValue}`].value);
-          if (valueA < valueB) return 1
-          if (valueA > valueB) return -1
-          return 0
-        } else {
-          return ([b[`${sortValue}`].value - a[`${sortValue}`].value] )
-        }
-      })
-    }
-    setTableData(dataCopy)
-  }
 
   return(
     tableData ? 
@@ -105,7 +78,7 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
             <StyledTableRow
             key={`TableRow-${Object.keys(item)[0].split(".")[0]}-${trim(index)}`}
             id={`TableRow-${Object.keys(item)[0].split(".")[0]}-${trim(index)}`}
-            onClick={(e) => handleTableRowClick({e, id: `TableRow-${Object.keys(item)[0].split(".")[0]}-${trim(index)}`})}
+            onClick={(e) => handleTableRowClick({ id: `TableRow-${Object.keys(item)[0].split(".")[0]}-${trim(index)}`})}
             backgroundColor={
                   index % 2 ? "#DEE1E5" : "oops" //ui2 for now, needs to be fixed
                 }
