@@ -30,7 +30,7 @@ import { ScooterQueue } from './ScooterQueue'
 import { Map } from './Map'
 import { Technicians } from './Technicians'
 import {AppContext} from './context'
-import {calculateDistance} from './utils'
+import {calculateDistance, sortHelper} from './utils'
 
 /**
  * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
@@ -69,22 +69,32 @@ export const Home: React.FC = () => {
       const partialKeyOfInterest = isScooter ? "scooters" : "technicians";
       const latOfInterest = pointOfInterest[`${partialKeyOfInterest}.last_lat_coord`].value;
       const lngOfInterest = pointOfInterest[`${partialKeyOfInterest}.last_lng_coord`].value;
-      
       const correspondingPartialKey = isScooter ? "technicians" : "scooters";
-      const correspondingArray = isScooter ? [...technicianData] : [...scooterData]
+
+      let correspondingArray = isScooter ? [...technicianData] : [...scooterData]
       correspondingArray.map(item => {
         const correspondingLat = item[`${correspondingPartialKey}.last_lat_coord`].value
         const correspondingLng = item[`${correspondingPartialKey}.last_lng_coord`].value
         const distance = calculateDistance(latOfInterest, lngOfInterest, correspondingLat, correspondingLng, "N" )
         item[`${correspondingPartialKey}.distance`] = {value: distance};
       })
-      setTechnicianData(correspondingArray) //for now
+      correspondingArray = sortHelper({data: correspondingArray, 
+        sortOrder: "ASC", 
+        sortValue: `${correspondingPartialKey}.distance`})
+      isScooter ? setTechnicianData(correspondingArray) : setScooterData(correspondingArray)
     }
 
   }, [pointOfInterest])
 
+  // const handleDrag = ({e}) =>{
+  //   console.log("onDrag")
+  //   console.log({e})
+  //   var rect = e.target.getBoundingClientRect();
+  //   console.log(rect.top, rect.right, rect.bottom, rect.left);
+  // }
+
   return (
-    <AppContext.Provider value={{pointOfInterest, setPointOfInterest}}>
+    <AppContext.Provider value={{pointOfInterest, setPointOfInterest    }}>
       <ComponentsProvider>
       <Flex height="100vh" 
       width="100vw" 
@@ -98,12 +108,14 @@ export const Home: React.FC = () => {
               </Heading>
           </Box2>
         </FlexItem>
-        <FlexItem width="50vw">
+        <FlexItem width="49vw">
           <Box2   p="u5" bg="ui1" height="92vh">
             <ScooterQueue scooterData={scooterData}/>
           </Box2>
         </FlexItem>
-        <FlexItem width="50vw">
+        {/* <FlexItem bg="ui4" width="1vw" draggable onDrag={(e) => handleDrag({e})}>
+        </FlexItem> */}
+        <FlexItem width="49vw">
           <Box2 height="60vh" >
             <Map  technicianData={technicianData} scooterData={scooterData}/>
           </Box2>
