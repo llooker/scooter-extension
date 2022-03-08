@@ -46,7 +46,7 @@ export const Technicians: React.FC = ({technicianData}) => {
         columnsToRender={Array.from(Array(Object.keys(technicianData[0]).length).keys())}
         initialSortValue={technicianData[0].hasOwnProperty("technicians.distance") ? 
           "technicians.distance" : 
-          "technicians.id"}
+          "technicians.first_name"}
         initialSortOrder={technicianData[0].hasOwnProperty("technicians.distance") ? 
           "ASC" : 
           "DESC"}

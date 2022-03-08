@@ -24,111 +24,87 @@
 
  */
 import React, { useContext, useEffect, useState } from 'react'
-import { Space, ProgressCircular, SpaceVertical } from '@looker/components'
 import { ExtensionContext } from '@looker/extension-sdk-react'
 import { Loader } from "@googlemaps/js-api-loader"
 import styled from 'styled-components';
 import {Spinner} from './Accessories'
 import {AppContext} from './context'
-
+import {icons} from './utils'
+import {technicianToPoint, scooterToPoint, numberOfCorrespondingPoints, commonCircleStyleProps} from './utils'
 /**
  * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
  */
 export const Map: React.FC = ({scooterData, technicianData}) => {
-  // console.log("Map")
-  // console.log({scooterData, technicianData})
   const { core40SDK } = useContext(ExtensionContext)
   const {pointOfInterest} = useContext(AppContext);
   
   const api_key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
 
-  const iconBase =
-  "https://developers.google.com/maps/documentation/javascript/examples/full/images/"
- const icons: Record<string, { icon: string }> = {
-   parkedScooter: {
-     icon: iconBase + "parking_lot_maps.png",
-   },
-   technician: {
-     icon: iconBase + "library_maps.png",
-   },
-   scooter: {
-     icon: iconBase + "info-i_maps.png",
-   },
- };
-
   useEffect(() => {
     if (scooterData && technicianData){
-      const scootyDat: Features[] = []
-      //keys from technician table
-      const technicianID = Object.keys(technicianData[0])[0]
-      const technicianFirstName = Object.keys(technicianData[0])[1]
-      const technicianLastName = Object.keys(technicianData[0])[2]
-      const technicianXCoord = Object.keys(technicianData[0])[4]
-      const technicianYCoord = Object.keys(technicianData[0])[5]
-      const technicianLevel = Object.keys(technicianData[0])[6]
-      const technicianPhoneNumber = Object.keys(technicianData[0])[7]
-      const technicianStatus = Object.keys(technicianData[0])[7]
-      //keys from scooter table
-      const scooterID = Object.keys(scooterData[0])[0]
-      const scooterXCoord = Object.keys(scooterData[0])[1]
-      const scooterYCoord = Object.keys(scooterData[0])[2]
-      const scooterLastBattery = Object.keys(scooterData[0])[4]
-      const scooterDaysSinceLastService = Object.keys(scooterData[0])[5]
+      let scootyDat: Features[] = []
 
       const loader = new Loader({
         apiKey: api_key,
         version: "weekly",
-        // ...additionalOptions,
       });
-
-      //icons for map
-
 
       const initializeMap = () => {
         // console.log("initializeMap")
         loader.load().then(() => {
+          const initialLat = scooterData[0][Object.keys(scooterData[0])[1]].value
+          const initialLng = scooterData[0][Object.keys(scooterData[0])[2]].value
           const map = new google.maps.Map(document.getElementById("container"), {
-            center: { lat: scooterData[0][scooterXCoord].value, lng: scooterData[0][scooterYCoord].value },
-                      zoom: 10,
+            center: { lat: initialLat, lng: initialLng },
+              zoom: 10,
           });
-          //format technician data to get passed into google maps api
-          technicianData.map((item) => {
-              scootyDat.push({id: item[technicianID].value,
-                              type: "technician",
-                              position: new google.maps.LatLng(parseFloat(item[technicianXCoord].value), parseFloat(item[technicianYCoord].value)),
-                              name: `${item[technicianFirstName].value} ${item[technicianLastName].value}`,
-                              level: item[technicianLevel].value,
-                              phoneNum: item[technicianPhoneNumber].value,
-                              status: item[technicianStatus].value
-                            })
-            })
-           //format scooter data to get passed into google maps api
-           scooterData.map((item) => {
-                scootyDat.push({ id: item[scooterID].value,
-                        type: "scooter",
-                        position: new google.maps.LatLng(parseFloat(item[scooterXCoord].value), parseFloat(item[scooterYCoord].value)),
-                        battery: item[scooterLastBattery].value,
-                        daysSinceService: item[scooterDaysSinceLastService].value})
-            })
-         // Create an info window to share between markers.
+          const technicianPoints = technicianToPoint({technicianData})
+          const scooterPoints = scooterToPoint({scooterData})
+          scootyDat = [...technicianPoints, ...scooterPoints]
+
+          // Create an info window to share between markers.
           const infoWindow = new google.maps.InfoWindow();
+
+          const isScooter = pointOfInterest && Object.keys(pointOfInterest)[0].indexOf("scoot") > -1 ;
+          const partialKeyOfInterest = isScooter ? "scooters" : "technicians";
+          const pointOfInterestId = pointOfInterest && pointOfInterest[`${partialKeyOfInterest}.id`].value;
+          
           // Create the markers.
           scootyDat.forEach((item) => {
-
-            const scooterOrTechnician = pointOfInterest && Object.keys(pointOfInterest)[0].indexOf("scoot") > -1 ? "scooters" : "technicians"; 
-            const pointOfInterestId = pointOfInterest && pointOfInterest[`${scooterOrTechnician}.id`].value;
+            const scooterTitle =  `${item["type"]} #${item["id"]}.  <br/> Last Reported Battery: ${item["battery"]} <br/> Days Since Last Service: ${item["daysSinceService"]}`
+            const technicianTitle =  `${item["type"]} #${item["id"]} <br/> Status: ${item["status"]} <br/> Name: ${item["name"]} <br/> Level: ${item["level"]} <br/> Phone Number: ${item["phoneNum"]}`
             
             const marker = new google.maps.Marker({
                   position: item["position"],
                   map: map,
-                  title: item["type"] === "scooter" ?
-                        `${item["type"]} #${item["id"]}.  <br/> Last Reported Battery: ${item["battery"]} <br/> Days Since Last Service: ${item["daysSinceService"]}` :
-                        `${item["type"]} #${item["id"]} <br/> Status: ${item["status"]} <br/> Name: ${item["name"]} <br/> Level: ${item["level"]} <br/> Phone Number: ${item["phoneNum"]}`,
+                  title: item.type === "scooter" ? scooterTitle : technicianTitle,
                   label: `${item["id"]}`,
                   icon: icons[item["type"]].icon,
                   optimized: false,
-                  animation: pointOfInterest && item.id === pointOfInterestId ?  google.maps.Animation.DROP : "",
+                  animation: pointOfInterest && 
+                    item.id === pointOfInterestId  &&
+                    item.type === partialKeyOfInterest.slice(0, -1) ? 
+                     google.maps.Animation.DROP : "",
                 });
+                
+              const poiCircle =  pointOfInterest && 
+                item.id === pointOfInterestId  &&
+                item.type === partialKeyOfInterest.slice(0, -1) ? new google.maps.Circle({
+                  ...commonCircleStyleProps,
+                  strokeColor: "#FF0000",
+                  fillColor: "#FF0000",
+                  map,
+                  center: item["position"],
+                }) : "";
+
+                const closestCorrespondingPoints = isScooter ? technicianPoints.slice(0, numberOfCorrespondingPoints) : scooterPoints.slice(0, numberOfCorrespondingPoints)
+                const correspondingCircle =  pointOfInterest && closestCorrespondingPoints.indexOf(item) > -1 ? new google.maps.Circle({
+                  ...commonCircleStyleProps,
+                  strokeColor: "#1a73e8",
+                  fillColor: "#1a73e8",
+                  map,
+                  center: item["position"],
+                }) : "";
 
             // Add a click listener for each marker, and set up the info window.
             marker.addListener("click", () => {
@@ -141,7 +117,8 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
       }
       initializeMap() //for now
     }
-  }, [scooterData, technicianData, pointOfInterest]) // activeIcon //could be improved
+  }, [scooterData, technicianData, pointOfInterest]) 
+
 
   return (
     <MapContainer id="container">
