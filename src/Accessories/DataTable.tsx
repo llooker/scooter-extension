@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useState, useRef } from 'react'
 import {Table, TableHead, TableBody, TableRow,TableDataCell, TableHeaderCell, Truncate } from '@looker/components'
-import {titleCaseHelper, sortHelper} from '../utils'
+import {titleCaseHelper, sortHelper, defaultValueFormat} from '../utils'
 import styled from 'styled-components';
 import {trim, toLower} from 'lodash'
 import {AppContext} from '../context'
+import numeral from 'numeral'
 
 export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, initialSortOrder}) => {
   // console.log("DataTable")
@@ -87,7 +88,7 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
                   id={`TableDataCell-${trim(innerItem)}`}
                   >
                   <Truncate>
-                    {Object.values(item)[innerItem].value}
+                    {numeral(Object.values(item)[innerItem].value).format(defaultValueFormat)}
                   </Truncate>
                 </TableDataCell>)
             })}
