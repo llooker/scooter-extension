@@ -26,12 +26,15 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { ComponentsProvider, Heading, Box2, Flex, FlexItem } from '@looker/components'
 import { ExtensionContext } from '@looker/extension-sdk-react'
+import { Loader } from "@googlemaps/js-api-loader"
 import { ScooterQueue } from './ScooterQueue'
 import { Map } from './Map'
 import { Technicians } from './Technicians'
 import {AppContext} from './context'
 import {calculateDistance, sortHelper, getWindowDimensions} from './utils'
 import { Resizable } from "re-resizable";
+import axios from 'axios'
+
 
 /**
  * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
@@ -79,9 +82,22 @@ export const Home: React.FC = () => {
         const correspondingLng = item[`${correspondingPartialKey}.last_lng_coord`].value
         const distance = calculateDistance(latOfInterest, lngOfInterest, correspondingLat, correspondingLng, "N" )
         item[`${correspondingPartialKey}.distance`] = {value: distance};
+
+        var directionsService = new google.maps.DirectionsService();
+        var directionsRenderer = new google.maps.DirectionsRenderer();
+        var request = {
+          origin: `${correspondingLat},${correspondingLng}`,
+          destination: `${latOfInterest},${lngOfInterest}`,
+          travelMode: 'DRIVING'
+        };
+        directionsService.route(request, function(result, status) {
+          if (status == 'OK') {
+            console.log(JSON.stringify(result))
+          }
+        });
       })
-      correspondingArray = sortHelper({data: correspondingArray, 
-        sortOrder: "ASC", 
+      correspondingArray = sortHelper({data: correspondingArray,
+        sortOrder: "ASC",
         sortValue: `${correspondingPartialKey}.distance`})
       isScooter ? setTechnicianData(correspondingArray) : setScooterData(correspondingArray)
     }
@@ -97,10 +113,10 @@ export const Home: React.FC = () => {
   return (
     <AppContext.Provider value={{pointOfInterest, setPointOfInterest    }}>
       <ComponentsProvider>
-      <Flex height="100vh" 
-      width="100vw" 
-      bg="ui1" 
-      m="-8px" 
+      <Flex height="100vh"
+      width="100vw"
+      bg="ui1"
+      m="-8px"
       flexWrap="wrap">
         <FlexItem width="100vw">
           <Box2 p="u5" bg="ui2" height="8vh">

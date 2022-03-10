@@ -37,7 +37,7 @@ import {technicianToPoint, scooterToPoint, numberOfCorrespondingPoints, commonCi
 export const Map: React.FC = ({scooterData, technicianData}) => {
   const { core40SDK } = useContext(ExtensionContext)
   const {pointOfInterest} = useContext(AppContext);
-  
+
   const api_key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
 
   useEffect(() => {
@@ -68,12 +68,12 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
           const isScooter = pointOfInterest && Object.keys(pointOfInterest)[0].indexOf("scoot") > -1 ;
           const partialKeyOfInterest = isScooter ? "scooters" : "technicians";
           const pointOfInterestId = pointOfInterest && pointOfInterest[`${partialKeyOfInterest}.id`].value;
-          
+
           // Create the markers.
           scootyDat.forEach((item) => {
             const scooterTitle =  `${item["type"]} #${item["id"]}.  <br/> Last Reported Battery: ${item["battery"]} <br/> Days Since Last Service: ${item["daysSinceService"]}`
             const technicianTitle =  `${item["type"]} #${item["id"]} <br/> Status: ${item["status"]} <br/> Name: ${item["name"]} <br/> Level: ${item["level"]} <br/> Phone Number: ${item["phoneNum"]}`
-            
+
             const marker = new google.maps.Marker({
                   position: item["position"],
                   map: map,
@@ -81,13 +81,13 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
                   label: `${item["id"]}`,
                   icon: icons[item["type"]].icon,
                   optimized: false,
-                  animation: pointOfInterest && 
+                  animation: pointOfInterest &&
                     item.id === pointOfInterestId  &&
-                    item.type === partialKeyOfInterest.slice(0, -1) ? 
+                    item.type === partialKeyOfInterest.slice(0, -1) ?
                      google.maps.Animation.DROP : "",
                 });
-                
-              const poiCircle =  pointOfInterest && 
+
+              const poiCircle =  pointOfInterest &&
                 item.id === pointOfInterestId  &&
                 item.type === partialKeyOfInterest.slice(0, -1) ? new google.maps.Circle({
                   ...commonCircleStyleProps,
@@ -117,7 +117,7 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
       }
       initializeMap() //for now
     }
-  }, [scooterData, technicianData, pointOfInterest]) 
+  }, [scooterData, technicianData, pointOfInterest])
 
 
   return (
