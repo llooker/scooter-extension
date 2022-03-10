@@ -19,3 +19,4 @@ export const commonCircleStyleProps = {
   fillOpacity: 0.35,
   radius: 2000,
 }
+export const defaultValueFormat = "0[.]00"

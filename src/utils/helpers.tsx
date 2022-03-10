@@ -102,3 +102,11 @@ export const scooterToPoint = ({scooterData}) => {
   })
   return returnArr;
 }
+
+export const getWindowDimensions = () => {
+  const { innerWidth: width, innerHeight: height } = window;
+  return {
+    width,
+    height
+  };
+}

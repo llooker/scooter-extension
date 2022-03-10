@@ -30,7 +30,8 @@ import { ScooterQueue } from './ScooterQueue'
 import { Map } from './Map'
 import { Technicians } from './Technicians'
 import {AppContext} from './context'
-import {calculateDistance, sortHelper} from './utils'
+import {calculateDistance, sortHelper, getWindowDimensions} from './utils'
+import { Resizable } from "re-resizable";
 
 /**
  * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
@@ -42,6 +43,7 @@ export const Home: React.FC = () => {
   const [scooterData, setScooterData] = useState(undefined)
   const [technicianData, setTechnicianData] = useState(undefined)
   const [pointOfInterest, setPointOfInterest] = useState(undefined)
+  const [leftColumnWidth, setLeftColumnWidth] = useState(50)
 
   useEffect(() => {
     //load data from technician and scooter query from Looker
@@ -86,12 +88,11 @@ export const Home: React.FC = () => {
 
   }, [pointOfInterest])
 
-  // const handleDrag = ({e}) =>{
-  //   console.log("onDrag")
-  //   console.log({e})
-  //   var rect = e.target.getBoundingClientRect();
-  //   console.log(rect.top, rect.right, rect.bottom, rect.left);
-  // }
+  const handleResize = (e) =>{
+    const {height, width} = getWindowDimensions();
+    const widthPercent = Math.floor((e.clientX/width)*100)
+    setLeftColumnWidth(widthPercent)
+  }
 
   return (
     <AppContext.Provider value={{pointOfInterest, setPointOfInterest    }}>
@@ -108,21 +109,33 @@ export const Home: React.FC = () => {
               </Heading>
           </Box2>
         </FlexItem>
-        <FlexItem width="49vw">
-          <Box2   p="u5" bg="ui1" height="92vh">
-            <ScooterQueue scooterData={scooterData}/>
-          </Box2>
-        </FlexItem>
-        {/* <FlexItem bg="ui4" width="1vw" draggable onDrag={(e) => handleDrag({e})}>
-        </FlexItem> */}
-        <FlexItem width="49vw">
-          <Box2 height="60vh" >
-            <Map  technicianData={technicianData} scooterData={scooterData}/>
-          </Box2>
-          <Box2 p="u5" bg="ui1" height="32vh">
-            <Technicians technicianData={technicianData}/>
-          </Box2>
-        </FlexItem>
+        <Resizable size={{width: `${leftColumnWidth}vw`}}
+          onResize={(e) => handleResize(e)}
+          style={{borderRight: '2px solid #DEE1E5',
+            overflow: "hidden"
+          }}
+        >
+          <FlexItem>
+            <Box2 p="u5" bg="ui1" height="92vh">
+              <ScooterQueue scooterData={scooterData}/>
+            </Box2>
+          </FlexItem>
+        </Resizable>
+        <Resizable size={{width: `${100 - leftColumnWidth}vw`}}
+        onResize={(e) => handleResize(e)}
+        style={{borderLeft: '2px solid #DEE1E5',
+          overflow: "hidden"
+        }}
+        >
+          <FlexItem>
+            <Box2 p="u5" height="60vh" >
+              <Map technicianData={technicianData} scooterData={scooterData}/>
+            </Box2>
+            <Box2 p="u5" bg="ui1" height="32vh">
+              <Technicians technicianData={technicianData}/>
+            </Box2>
+          </FlexItem>
+        </Resizable>
       </Flex>
       </ComponentsProvider>
     </AppContext.Provider>
