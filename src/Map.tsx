@@ -39,7 +39,6 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
   const {pointOfInterest} = useContext(AppContext);
 
   const api_key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
-  console.log({technicianData})
   useEffect(() => {
     if (scooterData && technicianData){
       let scootyDat: Features[] = []

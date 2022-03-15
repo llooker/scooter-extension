@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useRef } from 'react'
-import {Table, TableHead, TableBody, TableRow,TableDataCell, TableHeaderCell, Truncate } from '@looker/components'
+import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, TableHeaderCell, Truncate } from '@looker/components'
 import {titleCaseHelper, sortHelper, defaultValueFormat} from '../utils'
 import styled from 'styled-components';
 import {trim, toLower} from 'lodash'
@@ -7,8 +7,6 @@ import {AppContext} from '../context'
 import numeral from 'numeral'
 
 export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, initialSortOrder}) => {
-  // console.log("DataTable")
-  // console.log({data, columnsToRender, initialSortValue, initialSortOrder})
 
   const {setPointOfInterest} = useContext(AppContext);
   const [tableData, setTableData] = useState(undefined)
@@ -17,12 +15,12 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
   const prevSortValue = usePrevious(sortValue);
   const prevSortOrder = usePrevious(sortOrder);
 
-  const handleTableRowClick = ({id}) => {
+  const handleRowClick = (id) => {
     const rowClicked = tableData[id.split("-").pop() || 0]
     setPointOfInterest(rowClicked)
   } 
 
-  const handleTableHeaderCellClick = ({ id}) => {
+  const handleHeaderCellClick = (id) => {
     const thClicked =  document.getElementById(id);
     const thClickedDataAttr = thClicked.getAttribute('data');
     setSortValue(thClickedDataAttr)
@@ -48,57 +46,106 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
     }
   }, [sortValue, sortOrder, data])
 
+
   return(
     tableData ? 
     <TableContainer>
       <Table>
-      <TableHead>
+        
+       {/* TO DO: is this worth it?? */}
+      <TableHead 
+        tableData={tableData} 
+        columnsToRender={columnsToRender} 
+        sortOrder={sortOrder} 
+        sortValue={sortValue}
+        handleHeaderCellClick={handleHeaderCellClick}
+        />
+        <TableBody 
+          tableData={tableData} 
+          columnsToRender={columnsToRender} 
+          sortOrder={sortOrder} 
+          sortValue={sortValue}
+          handleRowClick={handleRowClick}
+          />
+    </Table>
+    </TableContainer> : "")
+}
+
+const TableHead = ({tableData, columnsToRender, sortOrder, sortValue, handleHeaderCellClick}) => {
+  return (
+    <TableHeadLC>
             <StyledTableRow>
               {columnsToRender.map((item)=> {
-                return (
-                  <TableHeaderCell 
-                  key={`TableHeaderCell-${Object.keys(tableData[0])[item]}`}
-                  id={`TableHeaderCell-${Object.keys(tableData[0])[item]}`}
-                  data={`${Object.keys(tableData[0])[item]}`}
-                  onClick={() => handleTableHeaderCellClick({id: `TableHeaderCell-${Object.keys(tableData[0])[item]}`})}
-                  >
-                   <b>{titleCaseHelper(Object.keys(tableData[0])[item].split(".").pop())}</b>
-                   {sortValue === Object.keys(tableData[0])[item] ? 
-                    ` ${sortOrder} `
-                   : ""}
-                  </TableHeaderCell>)
+                const propertyName = Object.keys(tableData[0])[item];
+                const headerCellKey = `TableHeaderCell-${propertyName}-${item}`;
+                if (propertyName){
+                  return (
+                    <TableHeaderCell 
+                    key={headerCellKey}
+                    id={headerCellKey}
+                    data={propertyName}
+                    onClick={() => handleHeaderCellClick(headerCellKey)}
+                    >
+                     <b>{titleCaseHelper(propertyName.split(".").pop())}</b>
+                     {sortValue === propertyName ? 
+                      ` ${sortOrder} `
+                     : ""}
+                    </TableHeaderCell>)
+                }
               })}
             </StyledTableRow>
-      </TableHead>
-      <TableBody>
+      </TableHeadLC>
+  )
+}
+
+const TableBody = ({tableData, columnsToRender, sortOrder, sortValue, handleRowClick}) => {
+  return (
+    <TableBodyLC>
         {tableData.map((item, index)=>{
+          
+        const isScooter = Object.keys(item)[0].indexOf("scoot") > -1 ;
+        const partialKey = isScooter ? "scooters" : "technicians";
+        const rowKey = `TableRow-${partialKey}-${trim(index)}`;
+
           return (
             <StyledTableRow
-            key={`TableRow-${Object.keys(item)[0].split(".")[0]}-${trim(index)}`}
-            id={`TableRow-${Object.keys(item)[0].split(".")[0]}-${trim(index)}`}
-            onClick={(e) => handleTableRowClick({ id: `TableRow-${Object.keys(item)[0].split(".")[0]}-${trim(index)}`})}
+            key={rowKey}
+            id={rowKey}
+            onClick={() => handleRowClick(rowKey)}
             backgroundColor={
                   index % 2 ? "#DEE1E5" : "oops" //ui2 for now, needs to be fixed
                 }
               >
                 {columnsToRender.map((innerItem)=> {
-              return (
-                <TableDataCell
-                key={`TableDataCell-${trim(innerItem)}`}
-                  id={`TableDataCell-${trim(innerItem)}`}
-                  >
-                  <Truncate>
-                    {numeral(Object.values(item)[innerItem].value).format(defaultValueFormat)}
-                  </Truncate>
-                </TableDataCell>)
+                  const propertyName = Object.keys(item)[innerItem];
+                  const dataCellKey = `TableDataCell-${propertyName}-${trim(index)}`
+                  const dataCellValue = Object.values(item)[innerItem] && 
+                    (Object.values(item)[innerItem].value || Object.values(item)[innerItem].value >= 0) ? 
+                    Object.values(item)[innerItem].value : 
+                    undefined;
+                    const dataCellText = Object.values(item)[innerItem] && 
+                      (Object.values(item)[innerItem].text || Object.values(item)[innerItem].text >= 0) ? 
+                      Object.values(item)[innerItem].text : 
+                      undefined;
+                  if (propertyName && dataCellKey){
+                    return (
+                      <TableDataCell
+                        key={dataCellKey}
+                        id={dataCellKey}>
+                        <Truncate>
+                          {isNaN(dataCellText || dataCellValue) ? 
+                          dataCellText || dataCellValue : 
+                          numeral(dataCellText || dataCellValue).format(defaultValueFormat) 
+                          }
+                        </Truncate>                
+                        </TableDataCell>)
+                  }
             })}
               </StyledTableRow>
-            
           )
         })}
-      </TableBody>
-    </Table>
-    </TableContainer> : "")
+      </TableBodyLC>
+  )
 }
 
 const TableContainer = styled.div`
@@ -120,3 +167,5 @@ function usePrevious(value) {
   });
   return ref.current;
 }
+
+

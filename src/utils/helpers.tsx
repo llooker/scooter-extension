@@ -110,3 +110,37 @@ export const getWindowDimensions = () => {
     height
   };
 }
+
+export const computeDirections = async ({correspondingArray, correspondingPartialKey, latOfInterest, lngOfInterest}) => {
+  // console.log("computeDirections")
+  // console.log({correspondingArray})
+  // console.log({correspondingPartialKey})
+  // console.log({latOfInterest})
+  // console.log({lngOfInterest})
+
+  const correspondingArrayWithDistance = await correspondingArray.map(async item => {
+    const correspondingLat = item[`${correspondingPartialKey}.last_lat_coord`].value
+    const correspondingLng = item[`${correspondingPartialKey}.last_lng_coord`].value
+
+    var service = new google.maps.DistanceMatrixService();
+    const resp = await service.getDistanceMatrix(
+    {
+      origins: [{lat: correspondingLat, lng: correspondingLng}],
+      destinations: [{lat: latOfInterest, lng: lngOfInterest}],
+      travelMode: 'DRIVING',
+      avoidHighways: true,
+      avoidTolls: true,
+    });
+
+
+    const distance = resp["rows"][0]["elements"][0]["distance"]
+    const duration = resp["rows"][0]["elements"][0]["duration"]
+
+      return {...item, 
+        [`${correspondingPartialKey}.duration`]: duration,
+        [`${correspondingPartialKey}.distance`]: distance, 
+      }
+
+  })
+  return correspondingArrayWithDistance
+}

@@ -36,14 +36,16 @@ export const Technicians: React.FC = ({technicianData}) => {
   // console.log({technicianData})
   const { core40SDK } = useContext(ExtensionContext)
   const [message, setMessage] = useState('')
+  const numberOfColumnsToRender = technicianData ? Array.from(Array(Object.keys(technicianData[0]).length).keys()) : [0];
 
-    return (
+    
+  return (
       <Box2>
         <Heading textAlign="center">Technicians</Heading>
       {technicianData ? 
       <DataTable 
         data={technicianData} 
-        columnsToRender={Array.from(Array(Object.keys(technicianData[0]).length).keys())}
+        columnsToRender={numberOfColumnsToRender}
         initialSortValue={technicianData[0].hasOwnProperty("technicians.distance") ? 
           "technicians.distance" : 
           "technicians.first_name"}
@@ -52,6 +54,7 @@ export const Technicians: React.FC = ({technicianData}) => {
           "DESC"}
         />
       : 
-     <Spinner />}</Box2>
+     <Spinner />}
+     </Box2>
     )
 }
