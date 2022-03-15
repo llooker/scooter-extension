@@ -57,6 +57,12 @@ export const Home: React.FC = () => {
         const technicianQueryForSlugResp = await core40SDK.ok(core40SDK.query_for_slug("nVJWfWhjD5JNZoPlHlvZxy"))
         const technicianQuery = await core40SDK.ok(core40SDK.run_query({query_id: technicianQueryForSlugResp.id,
           result_format: "json_detail", cache: false}))
+        // technicianQuery.data.map(item => {
+        //   item["technicians.full_name"] = {value: `${item["technicians.first_name"].value} ${item["technicians.last_name"].value}`}
+        //   delete item["technicians.first_name"]
+        //   delete item["technicians.last_name"]
+        // })
+
         setTechnicianData(technicianQuery.data)
       } catch (error) {
         console.error(error)
@@ -79,9 +85,9 @@ export const Home: React.FC = () => {
       
       computeDirections({correspondingArray, correspondingPartialKey, latOfInterest, lngOfInterest}).then((result) => {
           Promise.all(result).then(result2 =>{
-          result2 = sortHelper({data: result2, 
-            sortOrder: "ASC", 
-            sortValue: `${correspondingPartialKey}.distance`})
+          // result2 = sortHelper({data: result2, 
+          //   sortOrder: "ASC", 
+          //   sortValue: `${correspondingPartialKey}.duration`})
           isScooter ? setTechnicianData(result2) : setScooterData(result2)
           })
       })

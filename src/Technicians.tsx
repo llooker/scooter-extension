@@ -46,10 +46,10 @@ export const Technicians: React.FC = ({technicianData}) => {
       <DataTable 
         data={technicianData} 
         columnsToRender={numberOfColumnsToRender}
-        initialSortValue={technicianData[0].hasOwnProperty("technicians.distance") ? 
-          "technicians.distance" : 
+        initialSortValue={technicianData[0].hasOwnProperty("technicians.duration") ? 
+          "technicians.duration" : 
           "technicians.first_name"}
-        initialSortOrder={technicianData[0].hasOwnProperty("technicians.distance") ? 
+        initialSortOrder={technicianData[0].hasOwnProperty("technicians.duration") ? 
           "ASC" : 
           "DESC"}
         />
