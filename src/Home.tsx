@@ -34,6 +34,7 @@ import {AppContext} from './context'
 import {calculateDistance, sortHelper, getWindowDimensions} from './utils'
 import { Resizable } from "re-resizable";
 import axios from 'axios'
+import { connection_search_columns } from '@looker/sdk'
 
 
 /**
@@ -77,29 +78,40 @@ export const Home: React.FC = () => {
 
       const correspondingPartialKey = isScooter ? "technicians" : "scooters";
       let correspondingArray = isScooter ? [...technicianData] : [...scooterData]
+      console.log(technicianData)
       correspondingArray.map(item => {
         const correspondingLat = item[`${correspondingPartialKey}.last_lat_coord`].value
         const correspondingLng = item[`${correspondingPartialKey}.last_lng_coord`].value
-        const distance = calculateDistance(latOfInterest, lngOfInterest, correspondingLat, correspondingLng, "N" )
-        item[`${correspondingPartialKey}.distance`] = {value: distance};
+        // const distance = calculateDistance(latOfInterest, lngOfInterest, correspondingLat, correspondingLng, "N" )
+        // item[`${correspondingPartialKey}.distance`] = {value: distance};
 
         var directionsService = new google.maps.DirectionsService();
-        var directionsRenderer = new google.maps.DirectionsRenderer();
-        var request = {
-          origin: `${correspondingLat},${correspondingLng}`,
-          destination: `${latOfInterest},${lngOfInterest}`,
-          travelMode: 'DRIVING'
-        };
-        directionsService.route(request, function(result, status) {
-          if (status == 'OK') {
-            console.log(JSON.stringify(result))
-          }
-        });
+        var service = new google.maps.DistanceMatrixService();
+        const distanceResponse = async function getDistance() {
+          const resp = await service.getDistanceMatrix(
+            {
+              origins: [{lat: correspondingLat, lng: correspondingLng}],
+              destinations: [{lat: latOfInterest, lng: lngOfInterest}],
+              travelMode: 'DRIVING',
+              avoidHighways: true,
+              avoidTolls: true,
+            }, (response, status) => {
+                return {response, status}
+                      // const distance = response["rows"][0]["elements"][0]["distance"]
+                      // const duration = response["rows"][0]["elements"][0]["duration"]
+                      // item[`${correspondingPartialKey}.distance`] = {value: distance};
+                      // item[`${correspondingPartialKey}.duration`] = {value: duration};
+                      // console.log({correspondingArray})
+              });
+              return resp
+        }
+        console.log(distanceResponse())
       })
-      correspondingArray = sortHelper({data: correspondingArray,
-        sortOrder: "ASC",
-        sortValue: `${correspondingPartialKey}.distance`})
-      isScooter ? setTechnicianData(correspondingArray) : setScooterData(correspondingArray)
+    // console.log({correspondingArray})
+    //   correspondingArray = sortHelper({data: correspondingArray,
+    //     sortOrder: "ASC",
+    //     sortValue: `${correspondingPartialKey}.distance`})
+      // isScooter ? setTechnicianData(correspondingArray) : setScooterData(correspondingArray)
     }
 
   }, [pointOfInterest])
