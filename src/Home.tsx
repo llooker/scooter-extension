@@ -45,6 +45,7 @@ export const Home: React.FC = () => {
   const [technicianData, setTechnicianData] = useState(undefined)
   const [pointOfInterest, setPointOfInterest] = useState(undefined)
   const [leftColumnWidth, setLeftColumnWidth] = useState(50)
+  const [dispatchPoint, setDispatchPoint] = useState(undefined)
 
   useEffect(() => {
     //load data from technician and scooter query from Looker
@@ -79,17 +80,24 @@ export const Home: React.FC = () => {
       const partialKeyOfInterest = isScooter ? "scooters" : "technicians";
       const latOfInterest = pointOfInterest[`${partialKeyOfInterest}.last_lat_coord`].value;
       const lngOfInterest = pointOfInterest[`${partialKeyOfInterest}.last_lng_coord`].value;
+      //delete previously appended duration property from arrayOfInterest
+      const arrayOfInterest = isScooter ? [...scooterData] : [...technicianData]
+      arrayOfInterest.map(item => delete item[`${partialKeyOfInterest}.duration`])
 
       const correspondingPartialKey = isScooter ? "technicians" : "scooters";
       const correspondingArray = isScooter ? [...technicianData] : [...scooterData]
+
       
       computeDirections({correspondingArray, correspondingPartialKey, latOfInterest, lngOfInterest}).then((result) => {
-          Promise.all(result).then(result2 =>{
-          // result2 = sortHelper({data: result2, 
-          //   sortOrder: "ASC", 
-          //   sortValue: `${correspondingPartialKey}.duration`})
-          isScooter ? setTechnicianData(result2) : setScooterData(result2)
-          })
+        Promise.all(result).then(result2 =>{
+          if (isScooter){
+            setTechnicianData(result2)
+            setScooterData(arrayOfInterest)
+          } else {
+            setScooterData(result2)
+            setTechnicianData(arrayOfInterest)
+          }
+        })
       })
 
       
@@ -104,7 +112,10 @@ export const Home: React.FC = () => {
   }
 
   return (
-    <AppContext.Provider value={{pointOfInterest, setPointOfInterest    }}>
+    <AppContext.Provider value={{pointOfInterest, 
+    setPointOfInterest, 
+    dispatchPoint, 
+    setDispatchPoint}}>
       <ComponentsProvider>
       <Flex height="100vh"
       width="100vw"

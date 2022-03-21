@@ -30,13 +30,15 @@ import styled from 'styled-components';
 import {Spinner} from './Accessories'
 import {AppContext} from './context'
 import {icons} from './utils'
-import {technicianToPoint, scooterToPoint, numberOfCorrespondingPoints, commonCircleStyleProps} from './utils'
+import {technicianToPoint, scooterToPoint, numberOfCorrespondingPoints, commonCircleStyleProps, mapColors} from './utils'
+import { letterSpacing } from 'styled-system';
+// const {blue, red} = mapColors
 /**
  * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
  */
 export const Map: React.FC = ({scooterData, technicianData}) => {
   const { core40SDK } = useContext(ExtensionContext)
-  const {pointOfInterest} = useContext(AppContext);
+  const {pointOfInterest, dispatchPoint} = useContext(AppContext);
 
   const api_key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
   useEffect(() => {
@@ -49,7 +51,6 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
       });
 
       const initializeMap = () => {
-        // console.log("initializeMap")
         loader.load().then(() => {
           const initialLat = scooterData[0][Object.keys(scooterData[0])[1]].value
           const initialLng = scooterData[0][Object.keys(scooterData[0])[2]].value
@@ -67,6 +68,8 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
           const isScooter = pointOfInterest && Object.keys(pointOfInterest)[0].indexOf("scoot") > -1 ;
           const partialKeyOfInterest = isScooter ? "scooters" : "technicians";
           const pointOfInterestId = pointOfInterest && pointOfInterest[`${partialKeyOfInterest}.id`].value;
+          const correspondingPartialKey = isScooter ? "technicians" : "scooters";
+          const dispatchPointId = dispatchPoint && dispatchPoint[`${correspondingPartialKey}.id`].value;
 
           // Create the markers.
           scootyDat.forEach((item) => {
@@ -80,30 +83,36 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
                   label: `${item["id"]}`,
                   icon: icons[item["type"]].icon,
                   optimized: false,
-                  animation: pointOfInterest &&
+                  animation: (pointOfInterest &&
                     item.id === pointOfInterestId  &&
-                    item.type === partialKeyOfInterest.slice(0, -1) ?
-                     google.maps.Animation.DROP : "",
+                    item.type === partialKeyOfInterest.slice(0, -1)) || 
+                    ( dispatchPoint &&
+                      item.id === dispatchPointId &&
+                      item.type === correspondingPartialKey.slice(0, -1)) ?
+                    google.maps.Animation.DROP : "",
                 });
-
+              const {blue, red} = mapColors;
               const poiCircle =  pointOfInterest &&
                 item.id === pointOfInterestId  &&
                 item.type === partialKeyOfInterest.slice(0, -1) ? new google.maps.Circle({
                   ...commonCircleStyleProps,
-                  strokeColor: "#FF0000",
-                  fillColor: "#FF0000",
+                  strokeColor: red,
+                  fillColor: red,
                   map,
                   center: item["position"],
                 }) : "";
 
-                const closestCorrespondingPoints = isScooter ? technicianPoints.slice(0, numberOfCorrespondingPoints) : scooterPoints.slice(0, numberOfCorrespondingPoints)
-                const correspondingCircle =  pointOfInterest && closestCorrespondingPoints.indexOf(item) > -1 ? new google.maps.Circle({
-                  ...commonCircleStyleProps,
-                  strokeColor: "#1a73e8",
-                  fillColor: "#1a73e8",
-                  map,
-                  center: item["position"],
-                }) : "";
+                const dispatchCircle =  dispatchPoint &&
+                  item.id === dispatchPointId &&
+                  item.type === correspondingPartialKey.slice(0, -1) ? 
+                    new google.maps.Circle({
+                      ...commonCircleStyleProps,
+                      strokeColor: blue,
+                      fillColor: blue,
+                      map,
+                      center: item["position"],
+                    }) : 
+                    ""
 
             // Add a click listener for each marker, and set up the info window.
             marker.addListener("click", () => {
@@ -116,7 +125,7 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
       }
       initializeMap() //for now
     }
-  }, [scooterData, technicianData, pointOfInterest])
+  }, [scooterData, technicianData, dispatchPoint])
 
 
   return (

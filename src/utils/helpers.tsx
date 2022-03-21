@@ -56,7 +56,10 @@ export const sortHelper = ({data, sortOrder, sortValue})=>{
 }
 
 export const technicianToPoint = ({technicianData}) => {
+  // console.log("technicianToPoint")
+  // console.log({technicianData})
 
+  if(technicianData){
       //keys from technician table
       const technicianID = Object.keys(technicianData[0])[0]
       const technicianFirstName = Object.keys(technicianData[0])[1]
@@ -81,9 +84,13 @@ export const technicianToPoint = ({technicianData}) => {
       })
 
       return returnArr
+  }else return undefined;
 }
 
 export const scooterToPoint = ({scooterData}) => {
+  // console.log("scooterToPoint")
+  // console.log({scooterData})
+  if (scooterData){
   //keys from scooter table
   const scooterID = Object.keys(scooterData[0])[0]
   const scooterLatCoord = Object.keys(scooterData[0])[1]
@@ -101,6 +108,7 @@ export const scooterToPoint = ({scooterData}) => {
       daysSinceService: item[scooterDaysSinceLastService].value})
   })
   return returnArr;
+  } else return undefined;
 }
 
 export const getWindowDimensions = () => {
@@ -132,15 +140,12 @@ export const computeDirections = async ({correspondingArray, correspondingPartia
       avoidTolls: true,
     });
 
-
-    const distance = resp["rows"][0]["elements"][0]["distance"]
+    // const distance = resp["rows"][0]["elements"][0]["distance"]
     const duration = resp["rows"][0]["elements"][0]["duration"]
-
       return {...item, 
         [`${correspondingPartialKey}.duration`]: duration,
-        [`${correspondingPartialKey}.distance`]: distance, 
+        // [`${correspondingPartialKey}.distance`]: distance, 
       }
-
   })
   return correspondingArrayWithDistance
 }

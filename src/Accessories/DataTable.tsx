@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useRef } from 'react'
-import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, TableHeaderCell, Truncate } from '@looker/components'
+import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, TableHeaderCell, Truncate, Button } from '@looker/components'
 import {titleCaseHelper, sortHelper, defaultValueFormat} from '../utils'
 import styled from 'styled-components';
 import {trim, toLower} from 'lodash'
@@ -7,8 +7,9 @@ import {AppContext} from '../context'
 import numeral from 'numeral'
 
 export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, initialSortOrder}) => {
-
-  const {setPointOfInterest} = useContext(AppContext);
+  // console.log("DataTable")
+  // console.log({data, columnsToRender, initialSortValue, initialSortOrder})
+  const {setPointOfInterest, setDispatchPoint} = useContext(AppContext);
   const [tableData, setTableData] = useState(undefined)
   const [sortValue, setSortValue] = useState(undefined)
   const [sortOrder, setSortOrder] = useState(undefined)
@@ -18,6 +19,7 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
   const handleRowClick = (id) => {
     const rowClicked = tableData[id.split("-").pop() || 0]
     setPointOfInterest(rowClicked)
+    setDispatchPoint(undefined)
   } 
 
   const handleHeaderCellClick = (id) => {
@@ -26,6 +28,11 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
     setSortValue(thClickedDataAttr)
     setSortOrder(prevSortOrder === "DESC" ? "ASC" : "DESC")
   } 
+
+  const handleDispatchClick = (id) => {
+    const rowDispatched = tableData[id.split("-").pop() || 0]
+    setDispatchPoint(rowDispatched)
+  }
 
   //initialize onload
   useEffect(() => {
@@ -66,6 +73,7 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
           sortOrder={sortOrder} 
           sortValue={sortValue}
           handleRowClick={handleRowClick}
+          handleDispatchClick={handleDispatchClick}
           />
     </Table>
     </TableContainer> : "")
@@ -98,7 +106,7 @@ const TableHead = ({tableData, columnsToRender, sortOrder, sortValue, handleHead
   )
 }
 
-const TableBody = ({tableData, columnsToRender, sortOrder, sortValue, handleRowClick}) => {
+const TableBody = ({tableData, columnsToRender, sortOrder, sortValue, handleRowClick, handleDispatchClick}) => {
   return (
     <TableBodyLC>
         {tableData.map((item, index)=>{
@@ -123,10 +131,10 @@ const TableBody = ({tableData, columnsToRender, sortOrder, sortValue, handleRowC
                     (Object.values(item)[innerItem].value || Object.values(item)[innerItem].value >= 0) ? 
                     Object.values(item)[innerItem].value : 
                     undefined;
-                    const dataCellText = Object.values(item)[innerItem] && 
-                      (Object.values(item)[innerItem].text || Object.values(item)[innerItem].text >= 0) ? 
-                      Object.values(item)[innerItem].text : 
-                      undefined;
+                  const dataCellText = Object.values(item)[innerItem] && 
+                    (Object.values(item)[innerItem].text || Object.values(item)[innerItem].text >= 0) ? 
+                    Object.values(item)[innerItem].text : 
+                    undefined;
                   if (propertyName && dataCellKey){
                     return (
                       <TableDataCell
@@ -137,6 +145,14 @@ const TableBody = ({tableData, columnsToRender, sortOrder, sortValue, handleRowC
                           dataCellText || dataCellValue : 
                           numeral(dataCellText || dataCellValue).format(defaultValueFormat) 
                           }
+
+                          {propertyName.indexOf("duration") > -1 ? 
+                            <Button onClick={(e) => {
+                              e.stopPropagation();
+                              handleDispatchClick(dataCellKey)}
+                            }>Dispatch</Button>
+                          : ""}
+
                         </Truncate>                
                         </TableDataCell>)
                   }

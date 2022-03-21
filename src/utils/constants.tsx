@@ -20,3 +20,7 @@ export const commonCircleStyleProps = {
   radius: 2000,
 }
 export const defaultValueFormat = "0[.]00"
+export const mapColors = {
+  blue: "#1a73e8",
+  red: "#FF0000"
+}
