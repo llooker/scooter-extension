@@ -55,59 +55,59 @@ export const sortHelper = ({data, sortOrder, sortValue})=>{
   
 }
 
-export const technicianToPoint = ({technicianData}) => {
+export const technicianToPoint = (technicianArr) => {
   // console.log("technicianToPoint")
-  // console.log({technicianData})
+  // console.log({technicianArr})
 
-  if(technicianData){
+  if(technicianArr){
       //keys from technician table
-      const technicianID = Object.keys(technicianData[0])[0]
-      const technicianFirstName = Object.keys(technicianData[0])[1]
-      const technicianLastName = Object.keys(technicianData[0])[2]
-      const technicianLatCoord = Object.keys(technicianData[0])[4]
-      const technicianLngCoord = Object.keys(technicianData[0])[5]
-      const technicianLevel = Object.keys(technicianData[0])[6]
-      const technicianPhoneNumber = Object.keys(technicianData[0])[7]
-      const technicianStatus = Object.keys(technicianData[0])[8]
+      const technicianID = Object.keys(technicianArr[0])[0]
+      const technicianFirstName = Object.keys(technicianArr[0])[1]
+      const technicianLastName = Object.keys(technicianArr[0])[2]
+      const technicianLatCoord = Object.keys(technicianArr[0])[4]
+      const technicianLngCoord = Object.keys(technicianArr[0])[5]
+      const technicianLevel = Object.keys(technicianArr[0])[6]
+      const technicianPhoneNumber = Object.keys(technicianArr[0])[7]
+      const technicianStatus = Object.keys(technicianArr[0])[8]
 
       //format technician data to get passed into google maps api
       const returnArr = []
-      technicianData.map((item) => {
+      technicianArr.map((item) => {
         returnArr.push({id: item[technicianID].value,
                         type: "technician",
                         position: new google.maps.LatLng(parseFloat(item[technicianLatCoord].value), parseFloat(item[technicianLngCoord].value)),
                         name: `${item[technicianFirstName].value} ${item[technicianLastName].value}`,
                         level: item[technicianLevel].value,
                         phoneNum: item[technicianPhoneNumber].value,
-                        status: item[technicianStatus].value
+                        status: item[technicianStatus].value,
                       })
       })
-
       return returnArr
   }else return undefined;
 }
 
-export const scooterToPoint = ({scooterData}) => {
+export const scooterToPoint = (scooterArr) => {
   // console.log("scooterToPoint")
-  // console.log({scooterData})
-  if (scooterData){
-  //keys from scooter table
-  const scooterID = Object.keys(scooterData[0])[0]
-  const scooterLatCoord = Object.keys(scooterData[0])[1]
-  const scooterLngCoord = Object.keys(scooterData[0])[2]
-  const scooterLastBattery = Object.keys(scooterData[0])[4]
-  const scooterDaysSinceLastService = Object.keys(scooterData[0])[5]
+  // console.log({scooterArr})
+  if (scooterArr){
+    //keys from scooter table
+    const scooterID = Object.keys(scooterArr[0])[0]
+    const scooterLatCoord = Object.keys(scooterArr[0])[1]
+    const scooterLngCoord = Object.keys(scooterArr[0])[2]
+    const scooterLastBattery = Object.keys(scooterArr[0])[4]
+    const scooterDaysSinceLastService = Object.keys(scooterArr[0])[5]
 
-  //format scooter data to get passed into google maps api
-  const returnArr = []
-  scooterData.map((item) => {
-    returnArr.push({ id: item[scooterID].value,
-      type: "scooter",
-      position: new google.maps.LatLng(parseFloat(item[scooterLatCoord].value), parseFloat(item[scooterLngCoord].value)),
-      battery: item[scooterLastBattery].value,
-      daysSinceService: item[scooterDaysSinceLastService].value})
-  })
-  return returnArr;
+    //format scooter data to get passed into google maps api
+    const returnArr = []
+    scooterArr.map((item) => {
+      returnArr.push({ id: item[scooterID].value,
+        type: "scooter",
+        position: new google.maps.LatLng(parseFloat(item[scooterLatCoord].value), parseFloat(item[scooterLngCoord].value)),
+        battery: item[scooterLastBattery].value,
+        daysSinceService: item[scooterDaysSinceLastService].value,
+      })
+    })
+    return returnArr;
   } else return undefined;
 }
 

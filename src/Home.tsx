@@ -43,9 +43,9 @@ export const Home: React.FC = () => {
   const [message, setMessage] = useState('')
   const [scooterData, setScooterData] = useState(undefined)
   const [technicianData, setTechnicianData] = useState(undefined)
-  const [pointOfInterest, setPointOfInterest] = useState(undefined)
+  const [scooterToService, setScooterToService] = useState(undefined)
   const [leftColumnWidth, setLeftColumnWidth] = useState(50)
-  const [dispatchPoint, setDispatchPoint] = useState(undefined)
+  const [technicianToDispatch, setTechnicianToDispatch] = useState(undefined)
 
   useEffect(() => {
     //load data from technician and scooter query from Looker
@@ -74,12 +74,12 @@ export const Home: React.FC = () => {
   }, [core40SDK]) //onload
 
   useEffect(() => {
-    if (pointOfInterest && scooterData && technicianData){
+    if (scooterToService && scooterData && technicianData){
 
-      const isScooter = Object.keys(pointOfInterest)[0].indexOf("scoot") > -1 ;
+      const isScooter = Object.keys(scooterToService)[0].indexOf("scoot") > -1 ;
       const partialKeyOfInterest = isScooter ? "scooters" : "technicians";
-      const latOfInterest = pointOfInterest[`${partialKeyOfInterest}.last_lat_coord`].value;
-      const lngOfInterest = pointOfInterest[`${partialKeyOfInterest}.last_lng_coord`].value;
+      const latOfInterest = scooterToService[`${partialKeyOfInterest}.last_lat_coord`].value;
+      const lngOfInterest = scooterToService[`${partialKeyOfInterest}.last_lng_coord`].value;
       //delete previously appended duration property from arrayOfInterest
       const arrayOfInterest = isScooter ? [...scooterData] : [...technicianData]
       arrayOfInterest.map(item => delete item[`${partialKeyOfInterest}.duration`])
@@ -103,7 +103,7 @@ export const Home: React.FC = () => {
       
     }
 
-  }, [pointOfInterest])
+  }, [scooterToService])
 
   const handleResize = (e) =>{
     const {height, width} = getWindowDimensions();
@@ -112,10 +112,10 @@ export const Home: React.FC = () => {
   }
 
   return (
-    <AppContext.Provider value={{pointOfInterest, 
-    setPointOfInterest, 
-    dispatchPoint, 
-    setDispatchPoint}}>
+    <AppContext.Provider value={{scooterToService, 
+    setScooterToService, 
+    technicianToDispatch, 
+    setTechnicianToDispatch}}>
       <ComponentsProvider>
       <Flex height="100vh"
       width="100vw"

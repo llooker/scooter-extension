@@ -27,6 +27,8 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Box2, Heading } from '@looker/components'
 import { ExtensionContext } from '@looker/extension-sdk-react'
 import {Spinner, DataTable} from './Accessories'
+import {AppContext} from './context'
+
 /**
  * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
  */
@@ -34,15 +36,21 @@ export const ScooterQueue: React.FC = ({scooterData}) => {
   // console.log("ScooterQueue")
   // console.log({scooterData})
   const { core40SDK } = useContext(ExtensionContext)
+  const {scooterToService} = useContext(AppContext);
   const [message, setMessage] = useState('')
 
   // const sortedScooterData = scooterData ? 
   //   scooterData.sort((a, b) => b["scooters.days_since_last_service"].value - a["scooters.days_since_last_service"].value): 
   //   ""
 
+  useEffect(() => {
+    console.log({scooterToService})
+  }, [scooterToService])
+
   return (
     <Box2>
         <Heading textAlign="center">Scooters</Heading>
+        {/* {scooterToService ? scooterToService[`scooters.id`].value : ""} */}
     {scooterData ? 
       <DataTable 
       data={scooterData} 

@@ -38,7 +38,7 @@ import { letterSpacing } from 'styled-system';
  */
 export const Map: React.FC = ({scooterData, technicianData}) => {
   const { core40SDK } = useContext(ExtensionContext)
-  const {pointOfInterest, dispatchPoint} = useContext(AppContext);
+  const {scooterToService, technicianToDispatch} = useContext(AppContext);
 
   const api_key = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
   useEffect(() => {
@@ -52,24 +52,38 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
 
       const initializeMap = () => {
         loader.load().then(() => {
+          const directionsService = new google.maps.DirectionsService();
+          const directionsRenderer = new google.maps.DirectionsRenderer();
+
+          const technicianPoints = technicianToPoint(technicianData)
+          const scooterPoints = scooterToPoint(scooterData)
+
+          if (scooterToService && technicianToDispatch){
+            scootyDat = [...scooterToPoint([scooterToService]), ...technicianToPoint([technicianToDispatch])]
+          } else if (scooterToService){
+            scootyDat = [...scooterToPoint([scooterToService]), ...technicianPoints,]
+          } else {
+            scootyDat = [...technicianPoints, ...scooterPoints]
+          }
+
+          //could be improved
           const initialLat = scooterData[0][Object.keys(scooterData[0])[1]].value
           const initialLng = scooterData[0][Object.keys(scooterData[0])[2]].value
           const map = new google.maps.Map(document.getElementById("container"), {
             center: { lat: initialLat, lng: initialLng },
-              zoom: 10,
+              zoom: 9,
           });
-          const technicianPoints = technicianToPoint({technicianData})
-          const scooterPoints = scooterToPoint({scooterData})
-          scootyDat = [...technicianPoints, ...scooterPoints]
+
+          directionsRenderer.setMap(map);
 
           // Create an info window to share between markers.
           const infoWindow = new google.maps.InfoWindow();
 
-          const isScooter = pointOfInterest && Object.keys(pointOfInterest)[0].indexOf("scoot") > -1 ;
+          const isScooter = scooterToService && Object.keys(scooterToService)[0].indexOf("scoot") > -1 ;
           const partialKeyOfInterest = isScooter ? "scooters" : "technicians";
-          const pointOfInterestId = pointOfInterest && pointOfInterest[`${partialKeyOfInterest}.id`].value;
+          const scooterToServiceId = scooterToService && scooterToService[`${partialKeyOfInterest}.id`].value;
           const correspondingPartialKey = isScooter ? "technicians" : "scooters";
-          const dispatchPointId = dispatchPoint && dispatchPoint[`${correspondingPartialKey}.id`].value;
+          const technicianToDispatchId = technicianToDispatch && technicianToDispatch[`${correspondingPartialKey}.id`].value;
 
           // Create the markers.
           scootyDat.forEach((item) => {
@@ -83,17 +97,17 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
                   label: `${item["id"]}`,
                   icon: icons[item["type"]].icon,
                   optimized: false,
-                  animation: (pointOfInterest &&
-                    item.id === pointOfInterestId  &&
+                  animation: (scooterToService &&
+                    item.id === scooterToServiceId  &&
                     item.type === partialKeyOfInterest.slice(0, -1)) || 
-                    ( dispatchPoint &&
-                      item.id === dispatchPointId &&
+                    ( technicianToDispatch &&
+                      item.id === technicianToDispatchId &&
                       item.type === correspondingPartialKey.slice(0, -1)) ?
                     google.maps.Animation.DROP : "",
                 });
               const {blue, red} = mapColors;
-              const poiCircle =  pointOfInterest &&
-                item.id === pointOfInterestId  &&
+              const scooterCircle =  scooterToService &&
+                item.id === scooterToServiceId  &&
                 item.type === partialKeyOfInterest.slice(0, -1) ? new google.maps.Circle({
                   ...commonCircleStyleProps,
                   strokeColor: red,
@@ -102,8 +116,8 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
                   center: item["position"],
                 }) : "";
 
-                const dispatchCircle =  dispatchPoint &&
-                  item.id === dispatchPointId &&
+                const technicianCircle =  technicianToDispatch &&
+                  item.id === technicianToDispatchId &&
                   item.type === correspondingPartialKey.slice(0, -1) ? 
                     new google.maps.Circle({
                       ...commonCircleStyleProps,
@@ -121,11 +135,24 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
               infoWindow.open(marker.getMap(), marker);
             });
           });
+
+          if (scooterToService && technicianToDispatch){
+            const scooterPosition = scootyDat[0]["position"]
+            const technicianPosition = scootyDat[1]["position"]
+            directionsService.route({
+              origin: technicianPosition,  
+              destination: scooterPosition,
+              travelMode: google.maps.TravelMode.DRIVING,
+            }).then((response) => {
+              directionsRenderer.setDirections(response);
+            })
+            .catch((e) => window.alert("Directions request failed due to " + status));
+          }
         });
       }
       initializeMap() //for now
     }
-  }, [scooterData, technicianData, dispatchPoint])
+  }, [scooterData, technicianData, technicianToDispatch])
 
 
   return (

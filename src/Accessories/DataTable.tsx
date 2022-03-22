@@ -9,7 +9,7 @@ import numeral from 'numeral'
 export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, initialSortOrder}) => {
   // console.log("DataTable")
   // console.log({data, columnsToRender, initialSortValue, initialSortOrder})
-  const {setPointOfInterest, setDispatchPoint} = useContext(AppContext);
+  const {setScooterToService, setTechnicianToDispatch} = useContext(AppContext);
   const [tableData, setTableData] = useState(undefined)
   const [sortValue, setSortValue] = useState(undefined)
   const [sortOrder, setSortOrder] = useState(undefined)
@@ -18,8 +18,8 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
 
   const handleRowClick = (id) => {
     const rowClicked = tableData[id.split("-").pop() || 0]
-    setPointOfInterest(rowClicked)
-    setDispatchPoint(undefined)
+    setScooterToService(rowClicked)
+    setTechnicianToDispatch(undefined)
   } 
 
   const handleHeaderCellClick = (id) => {
@@ -31,7 +31,7 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
 
   const handleDispatchClick = (id) => {
     const rowDispatched = tableData[id.split("-").pop() || 0]
-    setDispatchPoint(rowDispatched)
+    setTechnicianToDispatch(rowDispatched)
   }
 
   //initialize onload
@@ -119,7 +119,7 @@ const TableBody = ({tableData, columnsToRender, sortOrder, sortValue, handleRowC
             <StyledTableRow
             key={rowKey}
             id={rowKey}
-            onClick={() => handleRowClick(rowKey)}
+            onClick={() => isScooter ? handleRowClick(rowKey) : ""}
             backgroundColor={
                   index % 2 ? "#DEE1E5" : "oops" //ui2 for now, needs to be fixed
                 }
