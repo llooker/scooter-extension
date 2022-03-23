@@ -25,34 +25,35 @@ export const sortHelper = ({data, sortOrder, sortValue})=>{
   // console.log({data, sortOrder, sortValue})
   if (data && sortOrder && sortValue){
     const dataCopy = [...data]
-    if (sortOrder === "ASC"){
-      dataCopy.sort((a, b) => {   
-        if (typeof a[`${sortValue}`].value === 'string'){
-          const valueA = toLower(a[`${sortValue}`].value);
-          const valueB = toLower(b[`${sortValue}`].value);
-          if (valueA < valueB) return -1
-          if (valueA > valueB) return 1
-          return 0
-        } else {
-          return ([a[`${sortValue}`].value - b[`${sortValue}`].value])
-        }
-      })
-    } else {
-      dataCopy.sort((a, b) => {
-        if (typeof a[`${sortValue}`].value === 'string'){
-          const valueA = toLower(a[`${sortValue}`].value);
-          const valueB = toLower(b[`${sortValue}`].value);
-          if (valueA < valueB) return 1
-          if (valueA > valueB) return -1
-          return 0
-        } else {
-          return ([b[`${sortValue}`].value - a[`${sortValue}`].value] )
-        }
-      })
-    }
-    return dataCopy
-  }
-  
+    if (dataCopy[0].hasOwnProperty(sortValue)){
+      if (sortOrder === "ASC"){
+        dataCopy.sort((a, b) => {   
+          if (typeof a[`${sortValue}`].value === 'string'){
+            const valueA = toLower(a[`${sortValue}`].value);
+            const valueB = toLower(b[`${sortValue}`].value);
+            if (valueA < valueB) return -1
+            if (valueA > valueB) return 1
+            return 0
+          } else {
+            return ([a[`${sortValue}`].value - b[`${sortValue}`].value])
+          }
+        })
+      } else {
+        dataCopy.sort((a, b) => {
+          if (typeof a[`${sortValue}`].value === 'string'){
+            const valueA = toLower(a[`${sortValue}`].value);
+            const valueB = toLower(b[`${sortValue}`].value);
+            if (valueA < valueB) return 1
+            if (valueA > valueB) return -1
+            return 0
+          } else {
+            return ([b[`${sortValue}`].value - a[`${sortValue}`].value] )
+          }
+        })
+      }
+      return dataCopy
+    } else return data;
+  } 
 }
 
 export const technicianToPoint = (technicianArr) => {
@@ -119,33 +120,34 @@ export const getWindowDimensions = () => {
   };
 }
 
-export const computeDirections = async ({correspondingArray, correspondingPartialKey, latOfInterest, lngOfInterest}) => {
+// export const computeDirections = async ({correspondingArray, correspondingPartialKey, latOfInterest, lngOfInterest}) => {
+export const computeDirections = async ({technicianData, scooterToServiceLat, scooterToServiceLng}) => {
   // console.log("computeDirections")
-  // console.log({correspondingArray})
-  // console.log({correspondingPartialKey})
-  // console.log({latOfInterest})
-  // console.log({lngOfInterest})
+  // console.log({technicianData})
+  // console.log({scooterToServiceLat})
+  // console.log({scooterToServiceLng})
 
-  const correspondingArrayWithDistance = await correspondingArray.map(async item => {
-    const correspondingLat = item[`${correspondingPartialKey}.last_lat_coord`].value
-    const correspondingLng = item[`${correspondingPartialKey}.last_lng_coord`].value
+  const technicianDataWithDuration = await technicianData.map(async item => {
+    const technicianLat = item["technicians.last_lat_coord"].value
+    const technicianLng = item["technicians.last_lng_coord"].value
 
     var service = new google.maps.DistanceMatrixService();
     const resp = await service.getDistanceMatrix(
     {
-      origins: [{lat: correspondingLat, lng: correspondingLng}],
-      destinations: [{lat: latOfInterest, lng: lngOfInterest}],
+      origins: [{lat: technicianLat, lng: technicianLng}],
+      destinations: [{lat: scooterToServiceLat, lng: scooterToServiceLng}],
       travelMode: 'DRIVING',
       avoidHighways: true,
       avoidTolls: true,
+      unitSystem: google.maps.UnitSystem.IMPERIAL   
     });
 
-    // const distance = resp["rows"][0]["elements"][0]["distance"]
+    const distance = resp["rows"][0]["elements"][0]["distance"]
     const duration = resp["rows"][0]["elements"][0]["duration"]
       return {...item, 
-        [`${correspondingPartialKey}.duration`]: duration,
-        // [`${correspondingPartialKey}.distance`]: distance, 
+        ["technicians.distance"]: distance,
+        ["technicians.duration"]: duration,
       }
   })
-  return correspondingArrayWithDistance
+  return technicianDataWithDuration
 }

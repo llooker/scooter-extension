@@ -23,29 +23,23 @@
  SOFTWARE.
 
  */
-import React, { useContext, useEffect, useState } from 'react'
+import React from 'react'
 import {Box2, Heading } from '@looker/components'
-import { ExtensionContext } from '@looker/extension-sdk-react'
-import {Spinner, DataTable} from './Accessories'
+import {DataTable} from './Accessories'
+import {technicianColumnsToRender} from './utils'
 
 /**
- * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
+ * Renders header and container for table with technicians data
  */
 export const Technicians: React.FC = ({technicianData}) => {
   // console.log("Technicians")
   // console.log({technicianData})
-  const { core40SDK } = useContext(ExtensionContext)
-  const [message, setMessage] = useState('')
-  const numberOfColumnsToRender = technicianData ? Array.from(Array(Object.keys(technicianData[0]).length).keys()) : [0];
-
-    
   return (
       <Box2>
         <Heading textAlign="center">Technicians</Heading>
-      {technicianData ? 
       <DataTable 
         data={technicianData} 
-        columnsToRender={numberOfColumnsToRender}
+        columnsToRender={technicianColumnsToRender}
         initialSortValue={technicianData[0].hasOwnProperty("technicians.duration") ? 
           "technicians.duration" : 
           "technicians.first_name"}
@@ -53,8 +47,6 @@ export const Technicians: React.FC = ({technicianData}) => {
           "ASC" : 
           "DESC"}
         />
-      : 
-     <Spinner />}
      </Box2>
     )
 }

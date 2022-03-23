@@ -30,11 +30,10 @@ import styled from 'styled-components';
 import {Spinner} from './Accessories'
 import {AppContext} from './context'
 import {icons} from './utils'
-import {technicianToPoint, scooterToPoint, numberOfCorrespondingPoints, commonCircleStyleProps, mapColors} from './utils'
-import { letterSpacing } from 'styled-system';
-// const {blue, red} = mapColors
+import {technicianToPoint, scooterToPoint, commonCircleStyleProps, mapColors} from './utils'
+
 /**
- * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
+ * Renders google map
  */
 export const Map: React.FC = ({scooterData, technicianData}) => {
   const { core40SDK } = useContext(ExtensionContext)

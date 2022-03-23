@@ -26,16 +26,19 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { ComponentsProvider, Heading, Box2, Flex, FlexItem } from '@looker/components'
 import { ExtensionContext } from '@looker/extension-sdk-react'
-import { ScooterQueue } from './ScooterQueue'
+import { Scooters } from './Scooters'
 import { Map } from './Map'
 import { Technicians } from './Technicians'
 import {AppContext} from './context'
-import {calculateDistance, sortHelper, getWindowDimensions, computeDirections} from './utils'
+import {getWindowDimensions, computeDirections} from './utils'
 import { Resizable } from "re-resizable";
+import {Spinner} from './Accessories'
 
 
 /**
- * A simple component that uses the Looker SDK through the extension sdk to display a customized hello message.
+ * Home component
+ * performs initial Looker API calls and
+ * renders scooters, map and technicians section of app
  */
 export const Home: React.FC = () => {
   // console.log("Home")
@@ -55,15 +58,10 @@ export const Home: React.FC = () => {
         const scooterQuery = await core40SDK.ok(core40SDK.run_query({query_id: scooterQueryForSlugResp.id,
           result_format: "json_detail",  cache: false}))
         setScooterData(scooterQuery.data)
+
         const technicianQueryForSlugResp = await core40SDK.ok(core40SDK.query_for_slug("nVJWfWhjD5JNZoPlHlvZxy"))
         const technicianQuery = await core40SDK.ok(core40SDK.run_query({query_id: technicianQueryForSlugResp.id,
           result_format: "json_detail", cache: false}))
-        // technicianQuery.data.map(item => {
-        //   item["technicians.full_name"] = {value: `${item["technicians.first_name"].value} ${item["technicians.last_name"].value}`}
-        //   delete item["technicians.first_name"]
-        //   delete item["technicians.last_name"]
-        // })
-
         setTechnicianData(technicianQuery.data)
       } catch (error) {
         console.error(error)
@@ -76,31 +74,19 @@ export const Home: React.FC = () => {
   useEffect(() => {
     if (scooterToService && scooterData && technicianData){
 
-      const isScooter = Object.keys(scooterToService)[0].indexOf("scoot") > -1 ;
-      const partialKeyOfInterest = isScooter ? "scooters" : "technicians";
-      const latOfInterest = scooterToService[`${partialKeyOfInterest}.last_lat_coord`].value;
-      const lngOfInterest = scooterToService[`${partialKeyOfInterest}.last_lng_coord`].value;
-      //delete previously appended duration property from arrayOfInterest
-      const arrayOfInterest = isScooter ? [...scooterData] : [...technicianData]
-      arrayOfInterest.map(item => delete item[`${partialKeyOfInterest}.duration`])
-
-      const correspondingPartialKey = isScooter ? "technicians" : "scooters";
-      const correspondingArray = isScooter ? [...technicianData] : [...scooterData]
-
+      const scooterToServiceLat = scooterToService["scooters.last_lat_coord"].value;
+      const scooterToServiceLng = scooterToService["scooters.last_lng_coord"].value;
       
-      computeDirections({correspondingArray, correspondingPartialKey, latOfInterest, lngOfInterest}).then((result) => {
+      computeDirections({technicianData, scooterToServiceLat, scooterToServiceLng}).then((result) => {
         Promise.all(result).then(result2 =>{
-          if (isScooter){
-            setTechnicianData(result2)
-            setScooterData(arrayOfInterest)
-          } else {
-            setScooterData(result2)
-            setTechnicianData(arrayOfInterest)
-          }
+          setTechnicianData(result2)
         })
       })
-
-      
+    } else if (scooterData && technicianData){
+      //delete previously appended duration property from arrayOfInterest
+      let technicianCopy = [...technicianData]
+      technicianCopy.map(item => delete item["technicians.duration"])
+      setTechnicianData(technicianCopy) //produces race condition
     }
 
   }, [scooterToService])
@@ -116,7 +102,10 @@ export const Home: React.FC = () => {
     setScooterToService, 
     technicianToDispatch, 
     setTechnicianToDispatch}}>
-      <ComponentsProvider>
+    <ComponentsProvider>
+      {scooterData && technicianData ? 
+      
+      
       <Flex height="100vh"
       width="100vw"
       bg="ui1"
@@ -136,8 +125,8 @@ export const Home: React.FC = () => {
           }}
         >
           <FlexItem>
-            <Box2 p="u5" bg="ui1" height="92vh">
-              <ScooterQueue scooterData={scooterData}/>
+            <Box2 p="u5" bg="ui1" height="90vh">
+              <Scooters scooterData={scooterData}/>
             </Box2>
           </FlexItem>
         </Resizable>
@@ -148,7 +137,7 @@ export const Home: React.FC = () => {
         }}
         >
           <FlexItem>
-            <Box2 p="u5" height="60vh" >
+            <Box2 p="u5" height="59vh" >
               <Map technicianData={technicianData} scooterData={scooterData}/>
             </Box2>
             <Box2 p="u5" bg="ui1" height="32vh">
@@ -157,6 +146,7 @@ export const Home: React.FC = () => {
           </FlexItem>
         </Resizable>
       </Flex>
+      : <Spinner />}
       </ComponentsProvider>
     </AppContext.Provider>
   )

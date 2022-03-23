@@ -11,8 +11,6 @@ export const icons: Record<string, { icon: string }> = {
    icon: iconBase + "info-i_maps.png",
  },
 };
-
-export const numberOfCorrespondingPoints = 5;
 export const commonCircleStyleProps = {
   strokeOpacity: 0.8,
   strokeWeight: 2,
@@ -24,3 +22,20 @@ export const mapColors = {
   blue: "#1a73e8",
   red: "#FF0000"
 }
+
+export const technicianColumnsToRender = ["technicians.id",
+  "technicians.first_name",
+  "technicians.last_name",
+  "technicians.email",
+  "technicians.level",
+  "technicians.phone_number",
+  "technicians.status",
+  "technicians.distance",
+  "technicians.duration",
+];
+
+export const scooterColumnsToRender = ["scooters.id",  
+"scooters.last_reported_battery", 
+"scooters.days_since_last_service", 
+"scooters.status"
+]

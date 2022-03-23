@@ -1,18 +1,21 @@
 import React, { useContext, useEffect, useState, useRef } from 'react'
-import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, TableHeaderCell, Truncate, Button } from '@looker/components'
+import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, TableHeaderCell, Truncate, Button, theme } from '@looker/components'
 import {titleCaseHelper, sortHelper, defaultValueFormat} from '../utils'
 import styled from 'styled-components';
-import {trim, toLower} from 'lodash'
+import {trim} from 'lodash'
 import {AppContext} from '../context'
-import numeral from 'numeral'
 
+/**
+ * Renders table consisting of scooter or technician data
+ */
 export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, initialSortOrder}) => {
   // console.log("DataTable")
   // console.log({data, columnsToRender, initialSortValue, initialSortOrder})
-  const {setScooterToService, setTechnicianToDispatch} = useContext(AppContext);
+  const {scooterToService, setScooterToService, setTechnicianToDispatch} = useContext(AppContext);
   const [tableData, setTableData] = useState(undefined)
   const [sortValue, setSortValue] = useState(undefined)
   const [sortOrder, setSortOrder] = useState(undefined)
+  const [selectedRow, setSelectedRow] = useState(undefined)
   const prevSortValue = usePrevious(sortValue);
   const prevSortOrder = usePrevious(sortOrder);
 
@@ -20,6 +23,7 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
     const rowClicked = tableData[id.split("-").pop() || 0]
     setScooterToService(rowClicked)
     setTechnicianToDispatch(undefined)
+    setSelectedRow(id.split("-").pop() || 0)
   } 
 
   const handleHeaderCellClick = (id) => {
@@ -53,13 +57,17 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
     }
   }, [sortValue, sortOrder, data])
 
+  useEffect(()=> {
+    if (scooterToService === undefined){
+      setSelectedRow(undefined)
+    }
+  }, [scooterToService])
+
 
   return(
     tableData ? 
     <TableContainer>
       <Table>
-        
-       {/* TO DO: is this worth it?? */}
       <TableHead 
         tableData={tableData} 
         columnsToRender={columnsToRender} 
@@ -67,46 +75,45 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
         sortValue={sortValue}
         handleHeaderCellClick={handleHeaderCellClick}
         />
-        <TableBody 
-          tableData={tableData} 
-          columnsToRender={columnsToRender} 
-          sortOrder={sortOrder} 
-          sortValue={sortValue}
-          handleRowClick={handleRowClick}
-          handleDispatchClick={handleDispatchClick}
-          />
+      <TableBody 
+        tableData={tableData} 
+        columnsToRender={columnsToRender} 
+        handleRowClick={handleRowClick}
+        handleDispatchClick={handleDispatchClick}
+        selectedRow={selectedRow}
+        />
     </Table>
     </TableContainer> : "")
 }
 
 const TableHead = ({tableData, columnsToRender, sortOrder, sortValue, handleHeaderCellClick}) => {
   return (
-    <TableHeadLC>
-            <StyledTableRow>
-              {columnsToRender.map((item)=> {
-                const propertyName = Object.keys(tableData[0])[item];
-                const headerCellKey = `TableHeaderCell-${propertyName}-${item}`;
-                if (propertyName){
-                  return (
-                    <TableHeaderCell 
-                    key={headerCellKey}
-                    id={headerCellKey}
-                    data={propertyName}
-                    onClick={() => handleHeaderCellClick(headerCellKey)}
-                    >
-                     <b>{titleCaseHelper(propertyName.split(".").pop())}</b>
-                     {sortValue === propertyName ? 
-                      ` ${sortOrder} `
-                     : ""}
-                    </TableHeaderCell>)
-                }
-              })}
-            </StyledTableRow>
-      </TableHeadLC>
+    <StyledTableHead>
+      <StyledTableRow backgroundColor={theme.colors.ui1}>
+        {columnsToRender.map((item, index)=> {
+          const propertyName = item;
+          const headerCellKey = `TableHeaderCell-${propertyName}-${index}`;
+          if (propertyName && tableData[0].hasOwnProperty(propertyName)){
+            return (
+              <TableHeaderCell 
+              key={headerCellKey}
+              id={headerCellKey}
+              data={propertyName}
+              onClick={() => handleHeaderCellClick(headerCellKey)}
+              >
+                <b>{titleCaseHelper(propertyName.split(".").pop())}</b>
+                {sortValue === propertyName ? 
+                ` ${sortOrder} `
+                : ""}
+              </TableHeaderCell>)
+          }
+        })}
+      </StyledTableRow>
+    </StyledTableHead>
   )
 }
 
-const TableBody = ({tableData, columnsToRender, sortOrder, sortValue, handleRowClick, handleDispatchClick}) => {
+const TableBody = ({tableData, columnsToRender, handleRowClick, handleDispatchClick, selectedRow}) => {
   return (
     <TableBodyLC>
         {tableData.map((item, index)=>{
@@ -121,36 +128,38 @@ const TableBody = ({tableData, columnsToRender, sortOrder, sortValue, handleRowC
             id={rowKey}
             onClick={() => isScooter ? handleRowClick(rowKey) : ""}
             backgroundColor={
-                  index % 2 ? "#DEE1E5" : "oops" //ui2 for now, needs to be fixed
+                  index == selectedRow ? theme.colors.ui3 : 
+                  index % 2 ? 
+                  theme.colors.ui2 : 
+                  "oops" //ui2 for now, needs to be fixed
                 }
               >
-                {columnsToRender.map((innerItem)=> {
-                  const propertyName = Object.keys(item)[innerItem];
+                {columnsToRender.map((innerItem, innerIndex)=> {
+                  const propertyName = innerItem;
                   const dataCellKey = `TableDataCell-${propertyName}-${trim(index)}`
-                  const dataCellValue = Object.values(item)[innerItem] && 
-                    (Object.values(item)[innerItem].value || Object.values(item)[innerItem].value >= 0) ? 
-                    Object.values(item)[innerItem].value : 
-                    undefined;
-                  const dataCellText = Object.values(item)[innerItem] && 
-                    (Object.values(item)[innerItem].text || Object.values(item)[innerItem].text >= 0) ? 
-                    Object.values(item)[innerItem].text : 
-                    undefined;
-                  if (propertyName && dataCellKey){
+                  //use value initially
+                  //use text if defined
+                  let dataCellText = item[innerItem] && 
+                  (item[innerItem].value || item[innerItem].value >= 0) ? 
+                  item[innerItem].value : 
+                  undefined;
+                  if (item[innerItem] && item[innerItem].hasOwnProperty("text")) dataCellText = item[innerItem].text
+                  if (propertyName && dataCellKey && (dataCellText || dataCellText >= 0)){
                     return (
                       <TableDataCell
                         key={dataCellKey}
                         id={dataCellKey}>
                         <Truncate>
-                          {isNaN(dataCellText || dataCellValue) ? 
-                          dataCellText || dataCellValue : 
-                          numeral(dataCellText || dataCellValue).format(defaultValueFormat) 
-                          }
-
+                          {dataCellText }
                           {propertyName.indexOf("duration") > -1 ? 
-                            <Button onClick={(e) => {
+                            <StyledButton onClick={(e) => {
                               e.stopPropagation();
                               handleDispatchClick(dataCellKey)}
-                            }>Dispatch</Button>
+                            }
+                            size="xsmall"
+                            color="critical"
+                            marginLeft={"15px"}
+                            >Dispatch</StyledButton>
                           : ""}
 
                         </Truncate>                
@@ -165,9 +174,13 @@ const TableBody = ({tableData, columnsToRender, sortOrder, sortValue, handleRowC
 }
 
 const TableContainer = styled.div`
- max-width: 100%;
- max-height: 100%;
+ max-width: 95%;
+ max-height: 95%;
  overflow: scroll`;
+
+ const StyledTableHead = styled(TableHeadLC)`
+  position: sticky; 
+  top: 0; z-index: 1;`;
 
  const StyledTableRow = styled(TableRow)<{
   backgroundColor: string
@@ -175,7 +188,11 @@ const TableContainer = styled.div`
   background: ${({ backgroundColor }) => backgroundColor};
   cursor: pointer
 `
-
+const StyledButton = styled(Button)<{
+  marginLeft: string
+}>`
+marginLeft: ${({ marginLeft }) => marginLeft};
+`
 function usePrevious(value) {
   const ref = useRef();
   useEffect(() => {
