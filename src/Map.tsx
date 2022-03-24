@@ -30,7 +30,7 @@ import styled from 'styled-components';
 import {Spinner} from './Accessories'
 import {AppContext} from './context'
 import {icons} from './utils'
-import {technicianToPoint, scooterToPoint, commonCircleStyleProps, mapColors} from './utils'
+import {technicianToPoint, scooterToPoint} from './utils'
 
 /**
  * Renders google map
@@ -72,6 +72,49 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
             center: { lat: initialLat, lng: initialLng },
               zoom: 9,
           });
+          /**
+           * from here: https://developers.google.com/maps/documentation/javascript/examples/hiding-features
+           * and: https://developers.google.com/maps/documentation/javascript/style-reference
+           */
+          map.setOptions({ styles:[
+            {
+              featureType: "poi.attraction",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "poi.business",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "poi.government",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "poi.medical",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "poi.park",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "poi.place_of_worship",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "poi.school",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "poi.sports_complex",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "transit",
+              elementType: "labels.icon",
+              stylers: [{ visibility: "off" }],
+            },
+          ], });
 
           directionsRenderer.setMap(map);
 
@@ -104,28 +147,6 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
                       item.type === correspondingPartialKey.slice(0, -1)) ?
                     google.maps.Animation.DROP : "",
                 });
-              const {blue, red} = mapColors;
-              const scooterCircle =  scooterToService &&
-                item.id === scooterToServiceId  &&
-                item.type === partialKeyOfInterest.slice(0, -1) ? new google.maps.Circle({
-                  ...commonCircleStyleProps,
-                  strokeColor: red,
-                  fillColor: red,
-                  map,
-                  center: item["position"],
-                }) : "";
-
-                const technicianCircle =  technicianToDispatch &&
-                  item.id === technicianToDispatchId &&
-                  item.type === correspondingPartialKey.slice(0, -1) ? 
-                    new google.maps.Circle({
-                      ...commonCircleStyleProps,
-                      strokeColor: blue,
-                      fillColor: blue,
-                      map,
-                      center: item["position"],
-                    }) : 
-                    ""
 
             // Add a click listener for each marker, and set up the info window.
             marker.addListener("click", () => {

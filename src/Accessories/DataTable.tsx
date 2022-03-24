@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useState, useRef } from 'react'
-import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, TableHeaderCell, Truncate, Button, theme } from '@looker/components'
+import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, TableHeaderCell, Truncate, Button, theme, Box2 } from '@looker/components'
 import {titleCaseHelper, sortHelper, defaultValueFormat} from '../utils'
 import styled from 'styled-components';
 import {trim} from 'lodash'
 import {AppContext} from '../context'
+import { colorStyle } from 'styled-system';
 
 /**
  * Renders table consisting of scooter or technician data
@@ -11,7 +12,7 @@ import {AppContext} from '../context'
 export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, initialSortOrder}) => {
   // console.log("DataTable")
   // console.log({data, columnsToRender, initialSortValue, initialSortOrder})
-  const {scooterToService, setScooterToService, setTechnicianToDispatch} = useContext(AppContext);
+  const {scooterToService, setScooterToService, setTechnicianToDispatch, windowHeight} = useContext(AppContext);
   const [tableData, setTableData] = useState(undefined)
   const [sortValue, setSortValue] = useState(undefined)
   const [sortOrder, setSortOrder] = useState(undefined)
@@ -63,10 +64,11 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
     }
   }, [scooterToService])
 
-
   return(
     tableData ? 
-    <TableContainer>
+    <TableContainer height={Object.keys(tableData[0])[0].indexOf("scoot") > -1 ? 
+    windowHeight - 140 : 
+    ((windowHeight - 145) * .4)}>
       <Table>
       <TableHead 
         tableData={tableData} 
@@ -173,10 +175,19 @@ const TableBody = ({tableData, columnsToRender, handleRowClick, handleDispatchCl
   )
 }
 
-const TableContainer = styled.div`
- max-width: 95%;
- max-height: 95%;
- overflow: scroll`;
+ const TableContainer = styled(Box2)<{
+  height: string
+}>`
+  height: ${({ height }) => height};
+  overflow: scroll;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  & {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  }
+`
 
  const StyledTableHead = styled(TableHeadLC)`
   position: sticky; 

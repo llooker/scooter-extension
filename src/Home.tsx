@@ -47,8 +47,10 @@ export const Home: React.FC = () => {
   const [scooterData, setScooterData] = useState(undefined)
   const [technicianData, setTechnicianData] = useState(undefined)
   const [scooterToService, setScooterToService] = useState(undefined)
-  const [leftColumnWidth, setLeftColumnWidth] = useState(50)
+  const [leftColumnWidth, setLeftColumnWidth] = useState(35)
   const [technicianToDispatch, setTechnicianToDispatch] = useState(undefined)
+  const [windowWidth, setWindowWidth] = useState(0);
+  const [windowHeight, setWindowHeight] = useState(0);
 
   useEffect(() => {
     //load data from technician and scooter query from Looker
@@ -91,17 +93,31 @@ export const Home: React.FC = () => {
 
   }, [scooterToService])
 
+  useEffect(() => {
+    resizeWindow();
+    window.addEventListener("resize", resizeWindow);
+    return () => window.removeEventListener("resize", resizeWindow);
+  }, []);
+
+  let resizeWindow = () => {
+    setWindowWidth(window.innerWidth);
+    setWindowHeight(window.innerHeight);
+  };
+
   const handleResize = (e) =>{
     const {height, width} = getWindowDimensions();
     const widthPercent = Math.floor((e.clientX/width)*100)
     setLeftColumnWidth(widthPercent)
   }
 
+
   return (
     <AppContext.Provider value={{scooterToService, 
     setScooterToService, 
     technicianToDispatch, 
-    setTechnicianToDispatch}}>
+    setTechnicianToDispatch,
+    windowHeight
+    }}>
     <ComponentsProvider>
       {scooterData && technicianData ? 
       
@@ -111,39 +127,35 @@ export const Home: React.FC = () => {
       bg="ui1"
       m="-8px"
       flexWrap="wrap">
-        <FlexItem width="100vw">
-          <Box2 p="u5" bg="ui2" height="8vh">
+        <FlexItem width="100vw" height="50px" maxHeight="50px">
+          <Box2 p="u3" bg="ui2" >
             <Heading>
             🛴🛴🛴 Scooty ⚡⚡⚡
               </Heading>
           </Box2>
         </FlexItem>
-        <Resizable size={{width: `${leftColumnWidth}vw`}}
+        <Resizable size={{width: `${leftColumnWidth}vw`, height: `${windowHeight - 55}px`}}
           onResize={(e) => handleResize(e)}
           style={{borderRight: '2px solid #DEE1E5',
-            overflow: "hidden"
+            overflow: "hidden",
           }}
         >
-          <FlexItem>
-            <Box2 p="u5" bg="ui1" height="90vh">
+            <Box2 p="u1" bg="ui1">
               <Scooters scooterData={scooterData}/>
             </Box2>
-          </FlexItem>
         </Resizable>
-        <Resizable size={{width: `${100 - leftColumnWidth}vw`}}
+        <Resizable size={{width: `${100 - leftColumnWidth}vw`, height: `${windowHeight - 55}px`}}
         onResize={(e) => handleResize(e)}
         style={{borderLeft: '2px solid #DEE1E5',
-          overflow: "hidden"
+          overflow: "hidden",
         }}
         >
-          <FlexItem>
-            <Box2 p="u5" height="59vh" >
+            <Box2 p="u1" height="60%" >
               <Map technicianData={technicianData} scooterData={scooterData}/>
             </Box2>
-            <Box2 p="u5" bg="ui1" height="32vh">
+            <Box2 p="u1" bg="ui1" height="40%">
               <Technicians technicianData={technicianData}/>
             </Box2>
-          </FlexItem>
         </Resizable>
       </Flex>
       : <Spinner />}
