@@ -29,9 +29,8 @@ import { Loader } from "@googlemaps/js-api-loader"
 import styled from 'styled-components';
 import {Spinner} from './Accessories'
 import {AppContext} from './context'
-import {icons} from './utils'
+import {markers} from './utils'
 import {technicianToPoint, scooterToPoint} from './utils'
-
 /**
  * Renders google map
  */
@@ -136,16 +135,10 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
                   position: item["position"],
                   map: map,
                   title: item.type === "scooter" ? scooterTitle : technicianTitle,
-                  label: `${item["id"]}`,
-                  icon: icons[item["type"]].icon,
-                  optimized: false,
-                  animation: (scooterToService &&
-                    item.id === scooterToServiceId  &&
-                    item.type === partialKeyOfInterest.slice(0, -1)) || 
-                    ( technicianToDispatch &&
-                      item.id === technicianToDispatchId &&
-                      item.type === correspondingPartialKey.slice(0, -1)) ?
-                    google.maps.Animation.DROP : "",
+                  icon: {...markers[item["type"]],
+                      anchor: new google.maps.Point(15, 30),
+                  },
+                  optimized: false
                 });
 
             // Add a click listener for each marker, and set up the info window.

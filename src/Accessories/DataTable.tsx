@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useRef } from 'react'
-import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, TableHeaderCell, Truncate, Button, theme, Box2 } from '@looker/components'
+import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, TableHeaderCell, Truncate, Button, theme, Box2, Tooltip } from '@looker/components'
 import {titleCaseHelper, sortHelper, defaultValueFormat} from '../utils'
 import styled from 'styled-components';
 import {trim} from 'lodash'
@@ -139,6 +139,7 @@ const TableBody = ({tableData, columnsToRender, handleRowClick, handleDispatchCl
                 {columnsToRender.map((innerItem, innerIndex)=> {
                   const propertyName = innerItem;
                   const dataCellKey = `TableDataCell-${propertyName}-${trim(index)}`
+                  const isBattery = propertyName.indexOf("battery") > -1 ? true : false;
                   //use value initially
                   //use text if defined
                   let dataCellText = item[innerItem] && 
@@ -152,7 +153,7 @@ const TableBody = ({tableData, columnsToRender, handleRowClick, handleDispatchCl
                         key={dataCellKey}
                         id={dataCellKey}>
                         <Truncate>
-                          {dataCellText }
+                          {isBattery ? <BatteryIndicator value={dataCellText}/>: dataCellText }
                           {propertyName.indexOf("duration") > -1 ? 
                             <StyledButton onClick={(e) => {
                               e.stopPropagation();
@@ -172,6 +173,27 @@ const TableBody = ({tableData, columnsToRender, handleRowClick, handleDispatchCl
           )
         })}
       </TableBodyLC>
+  )
+}
+
+function usePrevious(value) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
+const BatteryIndicator = ({value}) => {
+  let background = theme.colors.positive;
+  if (value < 25) background = theme.colors.critical
+  else if (value < 50) background = theme.colors.warn
+  return (
+ <IndicatorContainer>
+   <Tooltip content={`${value}%`}>
+    <Indicator background={background} width={`${value}%`} height="100%"/>
+ </Tooltip>
+ </IndicatorContainer>
   )
 }
 
@@ -204,12 +226,21 @@ const StyledButton = styled(Button)<{
 }>`
 marginLeft: ${({ marginLeft }) => marginLeft};
 `
-function usePrevious(value) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
+
+const IndicatorContainer = styled.div`
+  border: 1px solid ${theme.colors.ui4};
+  height: 20px; 
+  width: 80%; 
+  margin: 0 auto`
+
+const Indicator = styled.div<{
+  background: string,
+  width: string,
+  height: string
+}>`
+background: ${({ background }) => `${background}`};
+width: ${({ width }) => width};
+height: ${({ height }) => height};
+`
 
 
