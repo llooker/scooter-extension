@@ -24,9 +24,11 @@
 
  */
 import React from 'react'
-import {Box2, Heading } from '@looker/components'
+import { Box2, Heading, Text, theme, Flex, FlexItem} from '@looker/components'
 import {DataTable} from './Accessories'
-import {technicianColumnsToRender} from './utils'
+import {technicianColumnsToRender, technicianColumnsToRender2} from './utils'
+import wrench_circle from './images/wrench_circle.png'
+
 
 /**
  * Renders header and container for table with technicians data
@@ -36,10 +38,15 @@ export const Technicians: React.FC = ({technicianData}) => {
   // console.log({technicianData})
   return (
       <Box2>
-        <Heading textAlign="center">Technicians</Heading>
+      <Flex p={theme.sizes.small} alignItems="center">
+        <FlexItem><img src={wrench_circle}></img></FlexItem>
+        <FlexItem pl={theme.sizes.xsmall}>
+          <Text>Technicians:</Text>
+        </FlexItem>
+      </Flex>
       <DataTable 
         data={technicianData} 
-        columnsToRender={technicianColumnsToRender}
+        columnsToRender={technicianColumnsToRender2}
         initialSortValue={technicianData[0].hasOwnProperty("technicians.duration") ? 
           "technicians.duration" : 
           "technicians.first_name"}

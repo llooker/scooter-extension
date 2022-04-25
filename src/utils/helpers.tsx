@@ -4,6 +4,10 @@ export const titleCaseHelper = (str) => {
   return startCase(toLower(str));
 }
 
+export const lowerCaseHelper = (str) => {
+  return toLower(str)
+}
+
 export const    calculateDistance = (lat1, lon1, lat2, lon2, unit) => {
   var radlat1 = Math.PI * lat1/180
   var radlat2 = Math.PI * lat2/180
@@ -57,19 +61,16 @@ export const sortHelper = ({data, sortOrder, sortValue})=>{
 }
 
 export const technicianToPoint = (technicianArr) => {
-  // console.log("technicianToPoint")
-  // console.log({technicianArr})
 
   if(technicianArr){
       //keys from technician table
       const technicianID = Object.keys(technicianArr[0])[0]
-      const technicianFirstName = Object.keys(technicianArr[0])[1]
-      const technicianLastName = Object.keys(technicianArr[0])[2]
-      const technicianLatCoord = Object.keys(technicianArr[0])[4]
-      const technicianLngCoord = Object.keys(technicianArr[0])[5]
-      const technicianLevel = Object.keys(technicianArr[0])[6]
-      const technicianPhoneNumber = Object.keys(technicianArr[0])[7]
-      const technicianStatus = Object.keys(technicianArr[0])[8]
+      const technicianFullName = Object.keys(technicianArr[0])[1]
+      const technicianLatCoord = Object.keys(technicianArr[0])[3]
+      const technicianLngCoord = Object.keys(technicianArr[0])[4]
+      const technicianLevel = Object.keys(technicianArr[0])[5]
+      const technicianPhoneNumber = Object.keys(technicianArr[0])[6]
+      const technicianStatus = Object.keys(technicianArr[0])[7]
 
       //format technician data to get passed into google maps api
       const returnArr = []
@@ -77,7 +78,7 @@ export const technicianToPoint = (technicianArr) => {
         returnArr.push({id: item[technicianID].value,
                         type: "technician",
                         position: new google.maps.LatLng(parseFloat(item[technicianLatCoord].value), parseFloat(item[technicianLngCoord].value)),
-                        name: `${item[technicianFirstName].value} ${item[technicianLastName].value}`,
+                        name: item[technicianFullName].value,
                         level: item[technicianLevel].value,
                         phoneNum: item[technicianPhoneNumber].value,
                         status: item[technicianStatus].value,

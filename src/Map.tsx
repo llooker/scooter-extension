@@ -31,6 +31,8 @@ import {Spinner} from './Accessories'
 import {AppContext} from './context'
 import {markers} from './utils'
 import {technicianToPoint, scooterToPoint} from './utils'
+import { Box2 } from '@looker/components'
+
 /**
  * Renders google map
  */
@@ -159,6 +161,8 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
               destination: scooterPosition,
               travelMode: google.maps.TravelMode.DRIVING,
             }).then((response) => {
+              // from here: https://stackoverflow.com/questions/3264072/how-to-remove-default-a-b-markers-on-google-maps-route-direction
+              directionsRenderer.setOptions( { suppressMarkers: true } );
               directionsRenderer.setDirections(response);
             })
             .catch((e) => window.alert("Directions request failed due to " + status));
@@ -171,10 +175,11 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
 
 
   return (
+    <Box2>
     <MapContainer id="container">
       {scooterData && technicianData ? "" : <Spinner />
       }
-    </MapContainer>
+    </MapContainer></Box2>
   )
 }
 

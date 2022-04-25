@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useState, useRef } from 'react'
-import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, TableHeaderCell, Truncate, Button, theme, Box2, Tooltip } from '@looker/components'
-import {titleCaseHelper, sortHelper, defaultValueFormat} from '../utils'
+import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, 
+  TableHeaderCell, Truncate, Button, theme, Box2, Tooltip, Chip, Flex, FlexItem, Text } from '@looker/components'
+import {titleCaseHelper, sortHelper, defaultValueFormat, colors, lowerCaseHelper} from '../utils'
 import styled from 'styled-components';
 import {trim} from 'lodash'
 import {AppContext} from '../context'
-import { colorStyle } from 'styled-system';
+import {Timer} from '@styled-icons/material'
 
 /**
  * Renders table consisting of scooter or technician data
@@ -91,23 +92,23 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
 const TableHead = ({tableData, columnsToRender, sortOrder, sortValue, handleHeaderCellClick}) => {
   return (
     <StyledTableHead>
-      <StyledTableRow backgroundColor={theme.colors.ui1}>
+      <StyledTableRow background={colors.ui.light}>
         {columnsToRender.map((item, index)=> {
-          const propertyName = item;
-          const headerCellKey = `TableHeaderCell-${propertyName}-${index}`;
-          if (propertyName && tableData[0].hasOwnProperty(propertyName)){
+          const keyName = item.key;
+          const headerCellKey = `TableHeaderCell-${keyName}-${index}`;
+          if (keyName && tableData[0].hasOwnProperty(keyName)){
             return (
-              <TableHeaderCell 
+              <StyledTableHeaderCell 
               key={headerCellKey}
               id={headerCellKey}
-              data={propertyName}
+              data={keyName}
               onClick={() => handleHeaderCellClick(headerCellKey)}
               >
-                <b>{titleCaseHelper(propertyName.split(".").pop())}</b>
-                {sortValue === propertyName ? 
-                ` ${sortOrder} `
+                {titleCaseHelper(item.label)}
+                {sortValue === keyName ? 
+                  sortOrder === "ASC" ? " ▲ " : " ▼ "
                 : ""}
-              </TableHeaderCell>)
+              </StyledTableHeaderCell>)
           }
         })}
       </StyledTableRow>
@@ -129,41 +130,57 @@ const TableBody = ({tableData, columnsToRender, handleRowClick, handleDispatchCl
             key={rowKey}
             id={rowKey}
             onClick={() => isScooter ? handleRowClick(rowKey) : ""}
-            backgroundColor={
-                  index == selectedRow ? theme.colors.ui3 : 
-                  index % 2 ? 
-                  theme.colors.ui2 : 
-                  "oops" //ui2 for now, needs to be fixed
-                }
+            background={
+              index == selectedRow ? theme.colors.key : 
+              index % 2 ? 
+              colors.ui.hover : 
+              colors.ui.light //ui2 for now, needs to be fixed
+            }
               >
                 {columnsToRender.map((innerItem, innerIndex)=> {
-                  const propertyName = innerItem;
-                  const dataCellKey = `TableDataCell-${propertyName}-${trim(index)}`
-                  const isBattery = propertyName.indexOf("battery") > -1 ? true : false;
+                  const keyName = innerItem.key;
+                  const dataCellKey = `TableDataCell-${keyName}-${trim(index)}`
+                  const isBattery = keyName.indexOf("battery") > -1 ? true : false;
+                  const isStatus = keyName.indexOf("status") > -1 ? true : false;
+                  const isDuration = keyName.indexOf("duration") > -1 ? true : false;
+
                   //use value initially
                   //use text if defined
-                  let dataCellText = item[innerItem] && 
-                  (item[innerItem].value || item[innerItem].value >= 0) ? 
-                  item[innerItem].value : 
+                  let dataCellText = item[keyName] && 
+                  (item[keyName].value || item[keyName].value >= 0) ? 
+                  item[keyName].value : 
                   undefined;
-                  if (item[innerItem] && item[innerItem].hasOwnProperty("text")) dataCellText = item[innerItem].text
-                  if (propertyName && dataCellKey && (dataCellText || dataCellText >= 0)){
+
+                  if (item[keyName] && item[keyName].hasOwnProperty("text")) dataCellText = item[keyName].text
+                  if (keyName && dataCellKey && (dataCellText || dataCellText >= 0)){
                     return (
                       <TableDataCell
                         key={dataCellKey}
-                        id={dataCellKey}>
+                        id={dataCellKey}
+                        pt={isScooter ? theme.sizes.xxxsmall : theme.sizes.medium}
+                        pb={isScooter ? theme.sizes.xxxsmall : theme.sizes.medium}
+                        >
                         <Truncate>
-                          {isBattery ? <BatteryIndicator value={dataCellText}/>: dataCellText }
-                          {propertyName.indexOf("duration") > -1 ? 
+                          {isBattery ? <BatteryIndicator value={dataCellText}/>: 
+                          isStatus ? 
+                            <Status value={dataCellText} />
+                            : isDuration ? 
+                            <Flex>
+                              <FlexItem>{dataCellText}</FlexItem>
+                              <FlexItem>
                             <StyledButton onClick={(e) => {
                               e.stopPropagation();
                               handleDispatchClick(dataCellKey)}
                             }
                             size="xsmall"
-                            color="critical"
-                            marginLeft={"15px"}
-                            >Dispatch</StyledButton>
-                          : ""}
+                            background={theme.colors.key}
+                            marginLeft={theme.sizes.xsmall}
+                            iconBefore={<Timer />}
+                            disabled={keyName.indexOf("duration") > -1 ? false : true}
+                            >Dispatch</StyledButton></FlexItem>
+                            </Flex>
+                            : <Text>{dataCellText}</Text> }
+                  
 
                         </Truncate>                
                         </TableDataCell>)
@@ -185,15 +202,30 @@ function usePrevious(value) {
 }
 
 const BatteryIndicator = ({value}) => {
-  let background = theme.colors.positive;
-  if (value < 25) background = theme.colors.critical
-  else if (value < 50) background = theme.colors.warn
+  let background = colors.battery.high;
+  if (value < 25) background = colors.battery.low
+  else if (value < 50) background = colors.battery.medium
   return (
  <IndicatorContainer>
    <Tooltip content={`${value}%`}>
     <Indicator background={background} width={`${value}%`} height="100%"/>
  </Tooltip>
  </IndicatorContainer>
+  )
+}
+
+const Status = ({value}) => {
+  // console.log("Status")
+  // console.log({value})
+
+  let valueAsKey = value;
+  if (valueAsKey.indexOf(":") > -1 ) valueAsKey = valueAsKey.split(":").pop().trim();
+  valueAsKey = lowerCaseHelper(valueAsKey.replace(/[\W_]+/g,"_"));
+  return (
+    <StyledChip background={colors.status[valueAsKey]}
+      color={ colors.text.primary}
+      readOnly={true}
+    >{value}</StyledChip>
   )
 }
 
@@ -216,22 +248,50 @@ const BatteryIndicator = ({value}) => {
   top: 0; z-index: 1;`;
 
  const StyledTableRow = styled(TableRow)<{
-  backgroundColor: string
+  background: string,
+  padding: string,
 }>`
-  background: ${({ backgroundColor }) => backgroundColor};
+  background: ${({ background }) => background};
+  padding: ${({ padding }) => padding};
   cursor: pointer
 `
 const StyledButton = styled(Button)<{
   marginLeft: string
+  background: string
 }>`
-marginLeft: ${({ marginLeft }) => marginLeft};
+margin-left: ${({ marginLeft }) => marginLeft};
+background: ${({ background }) => background};
+border-radius: 0;
+
+
+
+`
+
+const StyledTableHeaderCell = styled(TableHeaderCell)<{
+}>`
+font-weight: bold;
+`
+
+const StyledChip = styled(Chip)<{
+  background: string,
+  color: string
+}>`
+background: ${({ background }) => background};
+color: ${({ color }) => color};
+border-radius: ${({ theme }) => `${theme.sizes.xsmall}`};
+&:hover {
+  background: ${({ background }) => background};
+}
 `
 
 const IndicatorContainer = styled.div`
   border: 1px solid ${theme.colors.ui4};
   height: 20px; 
   width: 80%; 
-  margin: 0 auto`
+  margin: 0 auto;
+  border-radius: ${({ theme }) => `${theme.sizes.xsmall}`};
+  overflow: hidden;
+  `
 
 const Indicator = styled.div<{
   background: string,

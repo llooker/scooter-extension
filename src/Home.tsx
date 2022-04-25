@@ -24,7 +24,7 @@
 
  */
 import React, { useContext, useEffect, useState } from 'react'
-import { ComponentsProvider, Heading, Box2, Flex, FlexItem } from '@looker/components'
+import { ComponentsProvider, Box2, Flex, FlexItem, theme} from '@looker/components'
 import { ExtensionContext } from '@looker/extension-sdk-react'
 import { Scooters } from './Scooters'
 import { Map } from './Map'
@@ -33,6 +33,8 @@ import {AppContext} from './context'
 import {getWindowDimensions, computeDirections} from './utils'
 import { Resizable } from "re-resizable";
 import {Spinner} from './Accessories'
+import logo from './images/logo.png'
+
 
 /**
  * Home component
@@ -60,7 +62,7 @@ export const Home: React.FC = () => {
           result_format: "json_detail",  cache: false}))
         setScooterData(scooterQuery.data)
 
-        const technicianQueryForSlugResp = await core40SDK.ok(core40SDK.query_for_slug("nVJWfWhjD5JNZoPlHlvZxy"))
+        const technicianQueryForSlugResp = await core40SDK.ok(core40SDK.query_for_slug("ngrhaLC06ISup26mbYVIQp"))
         const technicianQuery = await core40SDK.ok(core40SDK.run_query({query_id: technicianQueryForSlugResp.id,
           result_format: "json_detail", cache: false}))
         setTechnicianData(technicianQuery.data)
@@ -117,20 +119,30 @@ export const Home: React.FC = () => {
     setTechnicianToDispatch,
     windowHeight
     }}>
-    <ComponentsProvider>
+    <ComponentsProvider
+        themeCustomizations={{
+          colors: {
+            key: '#5C3BFE',
+            inform: theme.colors.text
+          },
+          fontFamilies: {
+            body: 'DM Sans'
+          }
+        }} 
+        loadGoogleFonts={true}>
       {scooterData && technicianData ? 
       
       
       <Flex height="100vh"
       width="100vw"
-      bg="ui1"
+      bg="background"
       m="-8px"
       flexWrap="wrap">
-        <FlexItem width="100vw" height="50px" maxHeight="50px">
-          <Box2 p="u3" bg="ui2" >
-            <Heading>
-            🛴🛴🛴 Scootyyyyy ⚡⚡⚡
-              </Heading>
+        <FlexItem width="100vw" height="50px" maxHeight="50px" >
+          <Box2 p="u3" 
+          bg="key" 
+          >
+            <img src={logo} />
           </Box2>
         </FlexItem>
         <Resizable size={{width: `${leftColumnWidth}vw`, height: `${windowHeight - 55}px`}}
@@ -139,7 +151,7 @@ export const Home: React.FC = () => {
             overflow: "hidden",
           }}
         >
-            <Box2 p="u1" bg="ui1">
+            <Box2 p="u1" bg="background">
               <Scooters scooterData={scooterData}/>
             </Box2>
         </Resizable>
@@ -149,10 +161,10 @@ export const Home: React.FC = () => {
           overflow: "hidden",
         }}
         >
-            <Box2 p="u1" height="60%" >
+            <Box2 p="u1" height="60%" bg="background">
               <Map technicianData={technicianData} scooterData={scooterData}/>
             </Box2>
-            <Box2 p="u1" bg="ui1" height="40%">
+            <Box2 p="u1" bg="background" height="40%">
               <Technicians technicianData={technicianData}/>
             </Box2>
         </Resizable>
