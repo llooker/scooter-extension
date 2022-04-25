@@ -34,7 +34,6 @@ import {getWindowDimensions, computeDirections} from './utils'
 import { Resizable } from "re-resizable";
 import {Spinner} from './Accessories'
 
-
 /**
  * Home component
  * performs initial Looker API calls and
@@ -130,7 +129,7 @@ export const Home: React.FC = () => {
         <FlexItem width="100vw" height="50px" maxHeight="50px">
           <Box2 p="u3" bg="ui2" >
             <Heading>
-            🛴🛴🛴 Scooty ⚡⚡⚡
+            🛴🛴🛴 Scootyyyyy ⚡⚡⚡
               </Heading>
           </Box2>
         </FlexItem>

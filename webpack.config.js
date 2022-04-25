@@ -58,7 +58,7 @@ module.exports = {
         exclude: /node_modules/,
         include: /src/,
         sideEffects: false,
-      },
+      }
     ],
   },
   resolve: {

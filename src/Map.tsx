@@ -135,9 +135,11 @@ export const Map: React.FC = ({scooterData, technicianData}) => {
                   position: item["position"],
                   map: map,
                   title: item.type === "scooter" ? scooterTitle : technicianTitle,
-                  icon: {...markers[item["type"]],
-                      anchor: new google.maps.Point(15, 30),
-                  },
+                  // icon: {...markers[item["type"]],
+                  //     anchor: new google.maps.Point(15, 30),
+                  // },
+                  icon: markers[item["type"]],
+
                   optimized: false
                 });
 
