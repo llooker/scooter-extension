@@ -1,18 +1,18 @@
 import React, { useContext, useEffect, useState, useRef } from 'react'
-import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableRow,TableDataCell, 
-  TableHeaderCell, Truncate, Button, theme, Box2, Tooltip, Chip, Flex, FlexItem, Text } from '@looker/components'
-import {titleCaseHelper, sortHelper, defaultValueFormat, colors, lowerCaseHelper} from '../utils'
-import styled from 'styled-components';
+import {Table, TableHead as TableHeadLC, TableBody as TableBodyLC , TableDataCell, 
+  Truncate, theme, Tooltip,  Flex, FlexItem, Text } from '@looker/components'
+import {titleCaseHelper, sortHelper, colors, lowerCaseHelper} from '../utils'
 import {trim} from 'lodash'
 import {AppContext} from '../context'
 import {Timer} from '@styled-icons/material'
+import {TableContainer, StyledTableHead, StyledTableRow, StyledButton, StyledTableHeaderCell, StyledChip, IndicatorContainer, Indicator} from './Styled'
 
 /**
  * Renders table consisting of scooter or technician data
  */
-export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, initialSortOrder}) => {
+export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, initialSortOrder, style}) => {
   // console.log("DataTable")
-  // console.log({data, columnsToRender, initialSortValue, initialSortOrder})
+  // console.log({data, columnsToRender, initialSortValue, initialSortOrder, style})
   const {scooterToService, setScooterToService, setTechnicianToDispatch, windowHeight} = useContext(AppContext);
   const [tableData, setTableData] = useState(undefined)
   const [sortValue, setSortValue] = useState(undefined)
@@ -77,6 +77,7 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
         sortOrder={sortOrder} 
         sortValue={sortValue}
         handleHeaderCellClick={handleHeaderCellClick}
+        style={style}
         />
       <TableBody 
         tableData={tableData} 
@@ -84,15 +85,17 @@ export const DataTable: React.FC = ({data, columnsToRender, initialSortValue, in
         handleRowClick={handleRowClick}
         handleDispatchClick={handleDispatchClick}
         selectedRow={selectedRow}
+        style={style}
         />
     </Table>
     </TableContainer> : "")
 }
 
-const TableHead = ({tableData, columnsToRender, sortOrder, sortValue, handleHeaderCellClick}) => {
+const TableHead = ({tableData, columnsToRender, sortOrder, sortValue, handleHeaderCellClick, style}) => {
+  const {zebra, pt, pb} = style;
   return (
     <StyledTableHead>
-      <StyledTableRow background={colors.ui.light}>
+      <StyledTableRow background={theme.colors.background}>
         {columnsToRender.map((item, index)=> {
           const keyName = item.key;
           const headerCellKey = `TableHeaderCell-${keyName}-${index}`;
@@ -116,26 +119,34 @@ const TableHead = ({tableData, columnsToRender, sortOrder, sortValue, handleHead
   )
 }
 
-const TableBody = ({tableData, columnsToRender, handleRowClick, handleDispatchClick, selectedRow}) => {
+const TableBody = ({tableData, columnsToRender, handleRowClick, handleDispatchClick, selectedRow, style}) => {
+  const {zebra, pt, pb, mt, mb} = style;
   return (
     <TableBodyLC>
         {tableData.map((item, index)=>{
-          
         const isScooter = Object.keys(item)[0].indexOf("scoot") > -1 ;
         const partialKey = isScooter ? "scooters" : "technicians";
         const rowKey = `TableRow-${partialKey}-${trim(index)}`;
-
+        let backgroundColor = theme.colors.background;
+        if (index === selectedRow) backgroundColor = theme.colors.key;
+        else if (zebra){
+          backgroundColor = index % 2 ? 
+              colors.ui.hover : 
+              colors.ui.light
+        }
+        let hoverBackground = zebra ? colors.ui.darkHover : theme.colors.background;
+        let hoverColor = zebra ? colors.text.primary : colors.text.dark;
+        
           return (
             <StyledTableRow
             key={rowKey}
             id={rowKey}
             onClick={() => isScooter ? handleRowClick(rowKey) : ""}
-            background={
-              index == selectedRow ? theme.colors.key : 
-              index % 2 ? 
-              colors.ui.hover : 
-              colors.ui.light //ui2 for now, needs to be fixed
-            }
+            background={ backgroundColor}
+            hoverBackground={ hoverBackground}
+            hoverColor={ hoverColor}
+            marginTop={mt}
+            marginBottom={mb}
               >
                 {columnsToRender.map((innerItem, innerIndex)=> {
                   const keyName = innerItem.key;
@@ -157,22 +168,21 @@ const TableBody = ({tableData, columnsToRender, handleRowClick, handleDispatchCl
                       <TableDataCell
                         key={dataCellKey}
                         id={dataCellKey}
-                        pt={isScooter ? theme.sizes.xxxsmall : theme.sizes.medium}
-                        pb={isScooter ? theme.sizes.xxxsmall : theme.sizes.medium}
+                        pt={pt}
+                        pb={pb}
                         >
                         <Truncate>
                           {isBattery ? <BatteryIndicator value={dataCellText}/>: 
                           isStatus ? 
                             <Status value={dataCellText} />
                             : isDuration ? 
-                            <Flex>
+                            <Flex alignItems="center">
                               <FlexItem>{dataCellText}</FlexItem>
                               <FlexItem>
                             <StyledButton onClick={(e) => {
                               e.stopPropagation();
                               handleDispatchClick(dataCellKey)}
                             }
-                            size="xsmall"
                             background={theme.colors.key}
                             marginLeft={theme.sizes.xsmall}
                             iconBefore={<Timer />}
@@ -180,8 +190,6 @@ const TableBody = ({tableData, columnsToRender, handleRowClick, handleDispatchCl
                             >Dispatch</StyledButton></FlexItem>
                             </Flex>
                             : <Text>{dataCellText}</Text> }
-                  
-
                         </Truncate>                
                         </TableDataCell>)
                   }
@@ -206,7 +214,7 @@ const BatteryIndicator = ({value}) => {
   if (value < 25) background = colors.battery.low
   else if (value < 50) background = colors.battery.medium
   return (
- <IndicatorContainer>
+ <IndicatorContainer background={background}>
    <Tooltip content={`${value}%`}>
     <Indicator background={background} width={`${value}%`} height="100%"/>
  </Tooltip>
@@ -215,9 +223,6 @@ const BatteryIndicator = ({value}) => {
 }
 
 const Status = ({value}) => {
-  // console.log("Status")
-  // console.log({value})
-
   let valueAsKey = value;
   if (valueAsKey.indexOf(":") > -1 ) valueAsKey = valueAsKey.split(":").pop().trim();
   valueAsKey = lowerCaseHelper(valueAsKey.replace(/[\W_]+/g,"_"));
@@ -229,78 +234,5 @@ const Status = ({value}) => {
   )
 }
 
- const TableContainer = styled(Box2)<{
-  height: string
-}>`
-  height: ${({ height }) => height};
-  overflow: scroll;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  & {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-  }
-`
-
- const StyledTableHead = styled(TableHeadLC)`
-  position: sticky; 
-  top: 0; z-index: 1;`;
-
- const StyledTableRow = styled(TableRow)<{
-  background: string,
-  padding: string,
-}>`
-  background: ${({ background }) => background};
-  padding: ${({ padding }) => padding};
-  cursor: pointer
-`
-const StyledButton = styled(Button)<{
-  marginLeft: string
-  background: string
-}>`
-margin-left: ${({ marginLeft }) => marginLeft};
-background: ${({ background }) => background};
-border-radius: 0;
-
-
-
-`
-
-const StyledTableHeaderCell = styled(TableHeaderCell)<{
-}>`
-font-weight: bold;
-`
-
-const StyledChip = styled(Chip)<{
-  background: string,
-  color: string
-}>`
-background: ${({ background }) => background};
-color: ${({ color }) => color};
-border-radius: ${({ theme }) => `${theme.sizes.xsmall}`};
-&:hover {
-  background: ${({ background }) => background};
-}
-`
-
-const IndicatorContainer = styled.div`
-  border: 1px solid ${theme.colors.ui4};
-  height: 20px; 
-  width: 80%; 
-  margin: 0 auto;
-  border-radius: ${({ theme }) => `${theme.sizes.xsmall}`};
-  overflow: hidden;
-  `
-
-const Indicator = styled.div<{
-  background: string,
-  width: string,
-  height: string
-}>`
-background: ${({ background }) => `${background}`};
-width: ${({ width }) => width};
-height: ${({ height }) => height};
-`
 
 

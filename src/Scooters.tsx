@@ -79,7 +79,14 @@ export const Scooters: React.FC = ({scooterData}) => {
           "scooters.days_since_last_service"}
         initialSortOrder={scooterData[0].hasOwnProperty("scooters.duration") ? 
           "ASC" : 
-          "DESC"}/>
+          "DESC"}
+        style={{
+          "zebra": true, 
+          "pt": theme.sizes.xxxsmall, 
+          "pb": theme.sizes.xxxsmall,
+          "mt": theme.sizes.xxxsmall, 
+          "mb": theme.sizes.xxxsmall,  }
+        }/>
       </Box2>
   )
 }

@@ -24,7 +24,7 @@
 
  */
 import React, { useContext, useEffect, useState } from 'react'
-import { ComponentsProvider, Box2, Flex, FlexItem, theme} from '@looker/components'
+import { ComponentsProvider, Box2, Flex, FlexItem, theme, MessageBar} from '@looker/components'
 import { ExtensionContext } from '@looker/extension-sdk-react'
 import { Scooters } from './Scooters'
 import { Map } from './Map'
@@ -52,6 +52,7 @@ export const Home: React.FC = () => {
   const [technicianToDispatch, setTechnicianToDispatch] = useState(undefined)
   const [windowWidth, setWindowWidth] = useState(0);
   const [windowHeight, setWindowHeight] = useState(0);
+  const [showDispatchMessageBar, setShowDispatchMessageBar] = useState(false)
 
   useEffect(() => {
     //load data from technician and scooter query from Looker
@@ -111,6 +112,15 @@ export const Home: React.FC = () => {
     setLeftColumnWidth(widthPercent)
   }
 
+  useEffect(()=> {
+    if (technicianToDispatch){
+      setShowDispatchMessageBar(true)
+      setTimeout(()=>{
+        setShowDispatchMessageBar(false)
+      }, 5000)
+    }
+  }, [technicianToDispatch])
+
 
   return (
     <AppContext.Provider value={{scooterToService, 
@@ -145,6 +155,12 @@ export const Home: React.FC = () => {
             <img src={logo} />
           </Box2>
         </FlexItem>
+
+
+
+        {technicianToDispatch && showDispatchMessageBar ?  <MessageBar noActions intent="inform">Technician {technicianToDispatch["technicians.full_name"].value} dispatched!</MessageBar>
+        : ""}
+
         <Resizable size={{width: `${leftColumnWidth}vw`, height: `${windowHeight - 55}px`}}
           onResize={(e) => handleResize(e)}
           style={{borderRight: '2px solid #DEE1E5',

@@ -63,8 +63,8 @@ export const colors = {
     needs_service: '#E7364F',
     in_service: '#B275E6',
     utilized: '#21AAEA',
-    not_working: '#F4F4F4',
-    unknown: '#F4F4F4',
+    not_working: '#cecece',
+    unknown: '#cecece',
 
   },
   battery:{

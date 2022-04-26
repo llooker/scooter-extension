@@ -53,6 +53,14 @@ export const Technicians: React.FC = ({technicianData}) => {
         initialSortOrder={technicianData[0].hasOwnProperty("technicians.duration") ? 
           "ASC" : 
           "DESC"}
+        style={{
+          "zebra": false, 
+          "pt": theme.sizes.medium, 
+          "pb": theme.sizes.medium,
+          "mt": theme.sizes.medium, 
+          "mb": theme.sizes.medium, 
+        }
+        }
         />
      </Box2>
     )
