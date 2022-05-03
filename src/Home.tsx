@@ -33,7 +33,13 @@ import {AppContext} from './context'
 import {getWindowDimensions, computeDirections} from './utils'
 import { Resizable } from "re-resizable";
 import {Spinner} from './Accessories'
-import logo from './images/logo.png'
+import type { ISDKSuccessResponse } from '@looker/sdk-rtl'
+import type {  IQuery, IError } from '@looker/sdk'
+import type { SDKResponse } from '@looker/sdk-rtl'
+
+
+
+const logo =  require("./images/logo.png")
 
 
 /**
@@ -58,12 +64,31 @@ export const Home: React.FC = () => {
     //load data from technician and scooter query from Looker
     const getData = async () => {
       try {
-        const scooterQueryForSlugResp = await core40SDK.ok(core40SDK.query_for_slug("9vP8udIOywTCPEwQgAxYTM"))
-        const scooterQuery = await core40SDK.ok(core40SDK.run_query({query_id: scooterQueryForSlugResp.id,
-          result_format: "json_detail",  cache: false}))
-        setScooterData(scooterQuery.data)
+        const pblDevScooterSlug = "9vP8udIOywTCPEwQgAxYTM"
+        const googleDemoScooterSlug = "MntYBKBgzVgGMZA5JXJd74"
+        const scooterQueryForSlugResp = await core40SDK.ok(core40SDK.query_for_slug(pblDevScooterSlug))
+        // eslint-disable-next-line MESSAGE_TO_DISABLE ???
 
-        const technicianQueryForSlugResp = await core40SDK.ok(core40SDK.query_for_slug("ngrhaLC06ISup26mbYVIQp"))
+        const scooterQueryId : number | undefined = scooterQueryForSlugResp.id;
+        if (scooterQueryId){
+          const scooterQuery : SDKResponse< IQuery, IError> = await core40SDK.run_query({query_id: scooterQueryId,
+            result_format: "json_detail",  
+            cache: false
+          })
+          if (scooterQuery && scooterQuery?.value?.data){
+            setScooterData(scooterQuery?.value?.data)
+          }
+        }
+
+        // prev implementation
+        // const scooterQuery = await core40SDK.ok(core40SDK.run_query({query_id: scooterQueryForSlugResp.id || 0,
+        //   result_format: "json_detail",  cache: false}))
+        //   console.log({scooterQuery})
+        // setScooterData(scooterQuery.data)
+
+        const pblDevTechnicianSlug = "ngrhaLC06ISup26mbYVIQp"
+        const googleDemoTechnicianSlug = "H7eDvomWG40owoiXhFVHv4"
+        const technicianQueryForSlugResp = await core40SDK.ok(core40SDK.query_for_slug(pblDevTechnicianSlug))
         const technicianQuery = await core40SDK.ok(core40SDK.run_query({query_id: technicianQueryForSlugResp.id,
           result_format: "json_detail", cache: false}))
         setTechnicianData(technicianQuery.data)
@@ -120,7 +145,6 @@ export const Home: React.FC = () => {
       }, 5000)
     }
   }, [technicianToDispatch])
-
 
   return (
     <AppContext.Provider value={{scooterToService, 
